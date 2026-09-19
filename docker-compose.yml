@@ -1,0 +1,103 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vibio_postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: luxeshop
+      POSTGRES_USER: luxeuser
+      POSTGRES_PASSWORD: luxepass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U luxeuser -d luxeshop']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vibio_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: vibio_api
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://luxeuser:luxepass@postgres:5432/luxeshop
+      REDIS_URL: redis://redis:6379
+      # Store-owner order notifications (recipients are configurable, never hardcoded).
+      # Real delivery needs RESEND_API_KEY / a WhatsApp provider in .env; without
+      # them the WhatsApp adapter logs the message and email is skipped-with-log.
+      STORE_NOTIFICATION_EMAIL: ${STORE_NOTIFICATION_EMAIL:-owner@vibio.com}
+      STORE_NOTIFICATION_PHONE: ${STORE_NOTIFICATION_PHONE:-+212600000000}
+      STORE_WHATSAPP_NUMBER: ${STORE_WHATSAPP_NUMBER:-}
+      WHATSAPP_PROVIDER: ${WHATSAPP_PROVIDER:-auto}
+      WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN:-}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
+      ADMIN_ORDER_NOTIFY_ON: ${ADMIN_ORDER_NOTIFY_ON:-created}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: vibio_web
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+    env_file:
+      - .env
+    environment:
+      # Browser-facing URL (reachable from the host via the published port).
+      # Note: this is baked into the client bundle at build time from web/.env.local.
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      # Server-side URL used inside the web container (NextAuth login, SSR
+      # fetches). Reaches the API over the compose network by service name.
+      INTERNAL_API_URL: http://api:3001
+      # Store contact for the customer "Order by phone" option.
+      NEXT_PUBLIC_STORE_PHONE_NUMBER: '+212600000000'
+      NEXT_PUBLIC_STORE_WHATSAPP_NUMBER: '212600000000'
+
+  adminer:
+    image: adminer
+    container_name: vibio_adminer
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+  redis_data:
