@@ -17,6 +17,7 @@ async function bootstrap() {
     origin: (origin, callback) => {
       const allowed = [
         process.env.NEXT_PUBLIC_SITE_URL,
+        'https://vibiodemo.vercel.app',
         'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:3002',
