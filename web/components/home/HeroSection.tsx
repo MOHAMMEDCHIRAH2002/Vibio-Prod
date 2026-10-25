@@ -43,6 +43,39 @@ const carouselProducts = [
   },
 ];
 
+const categoryPresentation: Record<string, { label: string; description: string }> = {
+  'dates-sweets': { label: 'Dates', description: 'Premium Medjool dates' },
+  chocolates: { label: 'Chocolate', description: 'Artisan cacao' },
+  'coffee-tea': { label: 'Coffee & Tea', description: 'Rare brews' },
+  'herbal-infusions': { label: 'Herbal Tea', description: 'Botanical blends' },
+  'natural-beauty': { label: 'Beauty', description: 'Natural care' },
+};
+
+function shortCategoryLabel(name: string, slug: string) {
+  const knownCategory = categoryPresentation[slug];
+  if (knownCategory) return knownCategory.label;
+
+  return name
+    .replace(/&/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .join(' ');
+}
+
+function shortCategoryDescription(description: string, slug: string) {
+  const knownCategory = categoryPresentation[slug];
+  if (knownCategory) return knownCategory.description;
+
+  return description
+    .split(/[.!?]/)[0]
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 4)
+    .join(' ');
+}
+
 /* ─────────────────────────────────────────────────────────────
    RIGHT PANEL CATEGORY DATA
    Tab selection switches the displayed product + images
@@ -65,9 +98,9 @@ export default function HeroSection() {
   const categoryData = (categories ?? []).flatMap((category) =>
     [category, ...(category.children ?? [])].map((item) => ({
       id: item.id,
-      label: item.name,
-      tag: item.description || '',
-      name: item.name,
+      label: shortCategoryLabel(item.name, item.slug),
+      tag: shortCategoryDescription(item.description || '', item.slug),
+      name: shortCategoryLabel(item.name, item.slug),
       price: '',
       images: item.image ? [item.image] : ['/HeroImg.png'],
       href: `/shop/${encodeURIComponent(item.slug)}`,
