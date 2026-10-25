@@ -33,6 +33,8 @@ export default function OrderDetailPage() {
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', id],
     queryFn: () => ordersApi.byId(id),
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   });
 
   if (isLoading) {

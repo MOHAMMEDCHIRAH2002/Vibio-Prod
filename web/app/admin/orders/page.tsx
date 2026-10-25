@@ -34,6 +34,8 @@ export default function AdminOrdersPage() {
         limit: 15,
         search: search || undefined,
       }),
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   });
 
   const orders = (data as any)?.orders || [];

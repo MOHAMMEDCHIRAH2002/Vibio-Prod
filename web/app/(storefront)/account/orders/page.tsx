@@ -26,6 +26,8 @@ export default function OrdersPage() {
     queryKey: ['orders'],
     queryFn: () => ordersApi.list({ limit: 20 }),
     enabled: !!session,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   });
 
   const orders = (data as any)?.orders || [];

@@ -5,6 +5,8 @@ import { CartService } from '../cart/cart.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PromoService } from '../promo/promo.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
+import { StatsService } from '../stats/stats.service';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrdersService {
@@ -17,6 +19,7 @@ export class OrdersService {
     private promo: PromoService,
     private loyalty: LoyaltyService,
     private config: ConfigService,
+    private stats: StatsService,
   ) {}
 
   async createFromCart(userId: string, sessionId: string, data: {
@@ -83,6 +86,37 @@ export class OrdersService {
     let order;
     try {
       order = await this.prisma.$transaction(async (tx) => {
+      const currentVariants = await tx.variant.findMany({
+        where: { id: { in: cartData.items.map((item) => item.variantId) } },
+        include: {
+          product: {
+            select: { name: true, images: true, isActive: true },
+          },
+        },
+      });
+      const variantsById = new Map(currentVariants.map((variant) => [variant.id, variant]));
+      const orderItems = cartData.items.map((item) => {
+        const variant = variantsById.get(item.variantId);
+        if (!variant || !variant.product.isActive) {
+          throw new BadRequestException('A cart item is no longer available');
+        }
+        if (Number(variant.price) !== item.price) {
+          throw new BadRequestException('A product price changed. Please review your cart.');
+        }
+        if (variant.stock < item.quantity) {
+          throw new BadRequestException('A cart item no longer has enough stock');
+        }
+        return {
+          productId: variant.productId,
+          variantId: variant.id,
+          name: variant.product.name,
+          variantName: `${variant.name}: ${variant.value}`,
+          price: Number(variant.price),
+          quantity: item.quantity,
+          image: variant.product.images[0],
+        };
+      });
+
       // Atomically claim one use of the promo. The conditional guards against a
       // race where two orders push a limited code past its maxUses.
       if (promoCodeId) {
@@ -117,25 +151,25 @@ export class OrdersService {
           idempotencyKey,
           notes: data.notes,
           items: {
-            create: cartData.items.map((item) => ({
-              productId: item.productId,
-              variantId: item.variantId,
-              name: item.name,
-              variantName: item.variantName,
-              price: item.price,
-              quantity: item.quantity,
-              image: item.image,
-            })),
+            create: orderItems,
           },
         },
         include: { items: true },
       });
 
-      for (const item of cartData.items) {
-        await tx.variant.update({
-          where: { id: item.variantId },
+      for (const item of orderItems) {
+        const stockClaim = await tx.variant.updateMany({
+          where: {
+            id: item.variantId,
+            price: item.price,
+            stock: { gte: item.quantity },
+            product: { is: { isActive: true } },
+          },
           data: { stock: { decrement: item.quantity } },
         });
+        if (stockClaim.count !== 1) {
+          throw new BadRequestException('A cart item changed. Please review your cart.');
+        }
       }
 
       // Spend the redeemed points inside the same transaction. The conditional
@@ -160,6 +194,7 @@ export class OrdersService {
       throw e;
     }
 
+    await this.stats.invalidate();
     await this.cart.clearCart(sessionId);
 
     if (user) {
@@ -312,22 +347,23 @@ export class OrdersService {
     return { orders, total, page, pages: Math.ceil(total / limit) };
   }
 
-  async updateStatus(id: string, status: string, trackingNumber?: string) {
+  async updateStatus(id: string, status: OrderStatus, trackingNumber?: string) {
     const order = await this.prisma.order.update({
       where: { id },
       data: {
-        status: status as any,
+        status,
         trackingNumber,
         paymentStatus:
           status === 'DELIVERED' ? 'PAID' : status === 'REFUNDED' ? 'REFUNDED' : undefined,
       },
       include: { user: { select: { email: true, name: true, phone: true } } },
     });
+    await this.stats.invalidate();
 
     // Loyalty side effects (idempotent, self-guarding):
     //  • paid/delivered → award points for the order
     //  • canceled/refunded → claw back earned points & refund redeemed points
-    if (status === 'DELIVERED' || status === 'PAID') {
+    if (status === 'DELIVERED') {
       await this.loyalty.awardForOrder(id);
       // Covers ADMIN_ORDER_NOTIFY_ON='paid': an online order deferred at creation
       // gets its store-owner notification now that payment has settled. Idempotent,

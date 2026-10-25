@@ -111,10 +111,22 @@ model Category {
   parentId    String?
   parent      Category?  @relation("SubCategories", fields: [parentId], references: [id])
   children    Category[] @relation("SubCategories")
+  slugAliases CategorySlugAlias[]
   products    Product[]
   sortOrder   Int        @default(0)
 
   @@map("categories")
+}
+
+model CategorySlugAlias {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([categoryId])
+  @@map("category_slug_aliases")
 }
 
 model Product {
@@ -124,14 +136,15 @@ model Product {
   description  String                   @db.Text
   shortDesc    String?
   images       String[]
-  categoryId   String
-  category     Category                 @relation(fields: [categoryId], references: [id])
+  categoryId   String?
+  category     Category?                @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   tags         Tag[]
   variants     Variant[]
   basePrice    Decimal                  @db.Decimal(10, 2)
   comparePrice Decimal?                 @db.Decimal(10, 2)
   isFeatured   Boolean                  @default(false)
   isActive     Boolean                  @default(true)
+  deletedAt    DateTime?
   metaTitle    String?
   metaDesc     String?
   weight       Float?

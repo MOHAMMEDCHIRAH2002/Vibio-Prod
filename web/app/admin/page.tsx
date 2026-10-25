@@ -14,22 +14,29 @@ export default function AdminDashboard() {
   const { data: overview } = useQuery({
     queryKey: ['stats', 'overview'],
     queryFn: statsApi.overview,
-    refetchInterval: 60000,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: revenue } = useQuery({
     queryKey: ['stats', 'revenue'],
     queryFn: () => statsApi.revenue('30d'),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: topProducts } = useQuery({
     queryKey: ['stats', 'top-products'],
     queryFn: statsApi.topProducts,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: ordersByStatus } = useQuery({
     queryKey: ['stats', 'orders-by-status'],
     queryFn: statsApi.ordersByStatus,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   const ov = overview as any;

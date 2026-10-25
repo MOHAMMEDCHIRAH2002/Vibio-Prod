@@ -9,8 +9,13 @@ import {
   IsPositive,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateVariantDto {
+  @IsOptional()
+  @IsString()
+  id?: string;
+
   @IsString()
   name: string;
 
@@ -27,7 +32,7 @@ export class CreateVariantDto {
 
   @IsOptional()
   @IsString()
-  sku?: string;
+  sku?: string | null;
 }
 
 export class CreateProductDto {
@@ -91,3 +96,5 @@ export class CreateProductDto {
   @Type(() => CreateVariantDto)
   variants?: CreateVariantDto[];
 }
+
+export class UpdateProductDto extends PartialType(CreateProductDto) {}

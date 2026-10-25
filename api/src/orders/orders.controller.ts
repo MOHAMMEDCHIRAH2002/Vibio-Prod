@@ -15,6 +15,7 @@ import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 @ApiTags('orders')
 @ApiBearerAuth()
@@ -73,7 +74,7 @@ export class OrdersController {
   @UseGuards(AdminGuard)
   updateStatus(
     @Param('id') id: string,
-    @Body() body: { status: string; trackingNumber?: string },
+    @Body() body: UpdateOrderStatusDto,
   ) {
     return this.orders.updateStatus(id, body.status, body.trackingNumber);
   }

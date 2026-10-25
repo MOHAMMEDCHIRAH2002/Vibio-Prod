@@ -10,7 +10,7 @@ interface Props {
 async function getProduct(slug: string) {
   const res = await fetch(
     `${SERVER_API_URL}/api/products/${slug}`,
-    { next: { revalidate: 60 } },
+    { cache: 'no-store' },
   );
   if (!res.ok) return null;
   return res.json();
@@ -29,8 +29,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
   };
 }
-
-export const revalidate = 60;
 
 export default async function ProductPage({ params }: Props) {
   const product = await getProduct(params.slug);

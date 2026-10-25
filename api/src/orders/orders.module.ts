@@ -5,9 +5,10 @@ import { CartModule } from '../cart/cart.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PromoModule } from '../promo/promo.module';
 import { LoyaltyModule } from '../loyalty/loyalty.module';
+import { StatsModule } from '../stats/stats.module';
 
 @Module({
-  imports: [CartModule, NotificationsModule, PromoModule, LoyaltyModule],
+  imports: [CartModule, NotificationsModule, PromoModule, LoyaltyModule, StatsModule],
   controllers: [OrdersController],
   providers: [OrdersService],
   exports: [OrdersService],

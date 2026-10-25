@@ -8,6 +8,7 @@ export interface CartItem {
   productId: string;
   name: string;
   variantName: string;
+  slug?: string;
   price: number;
   quantity: number;
   image?: string;
@@ -39,13 +40,49 @@ export class CartService {
   async getCart(sessionId: string): Promise<Cart> {
     const key = this.getCartKey(sessionId);
     const data = await this.redis.get(key);
-    return data ? JSON.parse(data) : { items: [], subtotal: 0 };
+    if (!data) return { items: [], subtotal: 0 };
+
+    const cart: Cart = JSON.parse(data);
+    if (!cart.items.length) return this.saveCart(sessionId, cart);
+
+    const variants = await this.prisma.variant.findMany({
+      where: { id: { in: cart.items.map((item) => item.variantId) } },
+      include: {
+        product: {
+          select: { id: true, name: true, slug: true, images: true, isActive: true },
+        },
+      },
+    });
+    const currentVariants = new Map(variants.map((variant) => [variant.id, variant]));
+
+    cart.items = cart.items.flatMap((item) => {
+      const variant = currentVariants.get(item.variantId);
+      if (!variant || !variant.product.isActive || variant.stock <= 0) return [];
+
+      return [{
+        ...item,
+        productId: variant.productId,
+        name: variant.product.name,
+        variantName: `${variant.name}: ${variant.value}`,
+        slug: variant.product.slug,
+        price: Number(variant.price),
+        quantity: Math.min(item.quantity, variant.stock),
+        image: variant.product.images[0],
+        stock: variant.stock,
+      }];
+    });
+
+    return this.saveCart(sessionId, cart);
   }
 
   async addItem(sessionId: string, variantId: string, quantity = 1): Promise<Cart> {
     const variant = await this.prisma.variant.findUnique({
       where: { id: variantId },
-      include: { product: { select: { name: true, images: true, isActive: true } } },
+      include: {
+        product: {
+          select: { name: true, slug: true, images: true, isActive: true },
+        },
+      },
     });
     if (!variant || !variant.product.isActive) {
       throw new BadRequestException('Product not available');
@@ -69,6 +106,7 @@ export class CartService {
         productId: variant.productId,
         name: variant.product.name,
         variantName: `${variant.name}: ${variant.value}`,
+        slug: variant.product.slug,
         price: Number(variant.price),
         quantity,
         image: variant.product.images[0],
@@ -109,10 +147,8 @@ export class CartService {
     }
 
     const guestKey = this.getCartKey(guestSessionId);
-    const guestRaw = await this.redis.get(guestKey);
-    if (!guestRaw) return this.getCart(userId);
-
-    const guest: Cart = JSON.parse(guestRaw);
+    const guest = await this.getCart(guestSessionId);
+    if (!guest.items.length) return this.getCart(userId);
     const user = await this.getCart(userId);
 
     for (const item of guest.items) {

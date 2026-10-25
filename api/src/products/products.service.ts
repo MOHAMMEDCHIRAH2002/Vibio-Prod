@@ -1,12 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto, CreateVariantDto } from './dto/create-product.dto';
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
+
   constructor(
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cache: Cache,
@@ -26,10 +29,10 @@ export class ProductsService {
   }) {
     const { page = 1, limit = 12, category, search, minPrice, maxPrice, inStock, sort = 'newest', admin = false } = query as any;
     const skip = (page - 1) * limit;
-    const cacheKey = `products:${JSON.stringify({ ...query, admin: !!admin })}`;
-    try { const cached = await this.cache.get(cacheKey); if (cached) return cached; } catch {}
 
-    const where: any = { isActive: true };
+    const where: Prisma.ProductWhereInput = admin
+      ? { deletedAt: null }
+      : { isActive: true, deletedAt: null };
 
     if (category) {
       where.category = { slug: category };
@@ -92,30 +95,23 @@ export class ProductsService {
       pages: Math.ceil(total / +limit),
     };
 
-    try { await this.cache.set(cacheKey, result, 60000); } catch {}
     return result;
   }
 
   async findFeatured() {
-    const cacheKey = 'products:featured';
-    try { const cached = await this.cache.get(cacheKey); if (cached) return cached; } catch {}
-
-    const products = await this.prisma.product.findMany({
-      where: { isFeatured: true, isActive: true },
+    return this.prisma.product.findMany({
+      where: { isFeatured: true, isActive: true, deletedAt: null },
       take: 8,
       include: {
         category: { select: { name: true, slug: true } },
         variants: { orderBy: { price: 'asc' } },
       },
     });
-
-    try { await this.cache.set(cacheKey, products, 300000); } catch {}
-    return products;
   }
 
   async findById(id: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
+    const product = await this.prisma.product.findFirst({
+      where: { id, deletedAt: null },
       include: {
         category: true,
         variants: { orderBy: { price: 'asc' } },
@@ -128,11 +124,8 @@ export class ProductsService {
   }
 
   async findBySlug(slug: string) {
-    const cacheKey = `products:slug:${slug}`;
-    try { const cached = await this.cache.get(cacheKey); if (cached) return cached; } catch {}
-
-    const product = await this.prisma.product.findUnique({
-      where: { slug },
+    const product = await this.prisma.product.findFirst({
+      where: { slug, isActive: true, deletedAt: null },
       include: {
         category: true,
         variants: { orderBy: { price: 'asc' } },
@@ -148,7 +141,6 @@ export class ProductsService {
     });
     if (!product) throw new NotFoundException('Product not found');
 
-    try { await this.cache.set(cacheKey, product, 60_000); } catch {}
     return product;
   }
 
@@ -175,60 +167,141 @@ export class ProductsService {
       include: { variants: true, category: true, tags: true },
     });
 
-    // Targeted cache invalidation to avoid wiping unrelated cached data.
-    await Promise.all([
-      this.cache.del('products:featured'),
-      this.cache.del(`products:slug:${product.slug}`),
-    ]).catch(() => {});
+    await this.invalidateProductCaches(product.slug);
     return product;
   }
 
   async update(id: string, dto: Partial<CreateProductDto>) {
     const { variants, tags, ...data } = dto;
+    const existing = await this.prisma.product.findFirst({
+      where: { id, deletedAt: null },
+      select: { slug: true },
+    });
+    if (!existing) throw new NotFoundException('Product not found');
 
-    const product = await this.prisma.product.update({
-      where: { id },
-      data: {
-        ...data,
-        tags: tags
-          ? {
-              set: [],
-              connectOrCreate: tags.map((t) => ({
-                where: { slug: t.toLowerCase().replace(/\s+/g, '-') },
-                create: { name: t, slug: t.toLowerCase().replace(/\s+/g, '-') },
-              })),
-            }
-          : undefined,
-      },
-      include: { variants: true, category: true, tags: true },
+    if (variants !== undefined) {
+      if (!variants.length) {
+        throw new BadRequestException('A product must have at least one variant');
+      }
+      data.basePrice = Math.min(...variants.map((variant) => variant.price));
+    }
+
+    const product = await this.prisma.$transaction(async (tx) => {
+      if (variants !== undefined) {
+        await this.syncVariants(tx, id, variants);
+      }
+
+      return tx.product.update({
+        where: { id },
+        data: {
+          ...data,
+          tags: tags
+            ? {
+                set: [],
+                connectOrCreate: tags.map((t) => ({
+                  where: { slug: t.toLowerCase().replace(/\s+/g, '-') },
+                  create: { name: t, slug: t.toLowerCase().replace(/\s+/g, '-') },
+                })),
+              }
+            : undefined,
+        },
+        include: { variants: { orderBy: { price: 'asc' } }, category: true, tags: true },
+      });
     });
 
-    // Invalidate featured list and the slug key for the updated product.
-    try {
-      const slug = (product as any).slug;
-      await Promise.all([this.cache.del('products:featured'), this.cache.del(`products:slug:${slug}`)]);
-    } catch {}
+    await this.invalidateProductCaches(existing.slug, product.slug);
     return product;
   }
 
   async remove(id: string) {
-    await this.prisma.product.update({
+    const product = await this.prisma.product.update({
       where: { id },
-      data: { isActive: false },
+      data: { isActive: false, deletedAt: new Date() },
+      select: { id: true, slug: true, deletedAt: true },
     });
-    try {
-      const p = await this.prisma.product.findUnique({ where: { id }, select: { slug: true } });
-      if (p?.slug) await this.cache.del(`products:slug:${p.slug}`);
-      await this.cache.del('products:featured');
-    } catch {}
+    await this.invalidateProductCaches(product.slug);
+    return product;
   }
 
   async addImages(id: string, imageUrls: string[]) {
-    const product = await this.prisma.product.findUnique({ where: { id } });
+    const product = await this.prisma.product.findFirst({
+      where: { id, deletedAt: null },
+    });
     if (!product) throw new NotFoundException('Product not found');
 
     const images = [...product.images, ...imageUrls];
-    return this.prisma.product.update({ where: { id }, data: { images } });
+    const updated = await this.prisma.product.update({
+      where: { id },
+      data: { images },
+      select: { slug: true },
+    });
+    await this.invalidateProductCaches(updated.slug);
+    return this.findById(id);
+  }
+
+  private async syncVariants(
+    tx: Prisma.TransactionClient,
+    productId: string,
+    variants: CreateVariantDto[],
+  ) {
+    const current = await tx.variant.findMany({
+      where: { productId },
+      select: { id: true },
+    });
+    const currentIds = new Set(current.map((variant) => variant.id));
+    const submittedIds = variants.flatMap((variant) => (variant.id ? [variant.id] : []));
+
+    if (
+      new Set(submittedIds).size !== submittedIds.length ||
+      submittedIds.some((variantId) => !currentIds.has(variantId))
+    ) {
+      throw new BadRequestException('One or more variants do not belong to this product');
+    }
+
+    const retainedIds = new Set(submittedIds);
+    const removedIds = current
+      .map((variant) => variant.id)
+      .filter((variantId) => !retainedIds.has(variantId));
+
+    if (removedIds.length) {
+      await tx.orderItem.updateMany({
+        where: { variantId: { in: removedIds } },
+        data: { variantId: null },
+      });
+    }
+
+    await tx.variant.deleteMany({
+      where: {
+        productId,
+        ...(retainedIds.size ? { id: { notIn: [...retainedIds] } } : {}),
+      },
+    });
+
+    for (const variant of variants) {
+      const { id: variantId, ...fields } = variant;
+      const variantData = { ...fields, sku: fields.sku || null };
+
+      if (variantId) {
+        await tx.variant.update({ where: { id: variantId }, data: variantData });
+      } else {
+        await tx.variant.create({ data: { ...variantData, productId } });
+      }
+    }
+  }
+
+  private async invalidateProductCaches(...slugs: string[]) {
+    try {
+      await Promise.all([
+        this.cache.del('categories:all'),
+        ...[...new Set(slugs.filter(Boolean))].map((slug) =>
+          this.cache.del(`products:slug:${slug}`),
+        ),
+      ]);
+    } catch (error) {
+      this.logger.warn(
+        `Product cache invalidation failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   private getSortOrder(sort: string) {

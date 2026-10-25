@@ -19,10 +19,11 @@ export function useCart() {
   const { data: cart, isLoading } = useQuery<Cart>({
     queryKey: ['cart', cartOwner],
     queryFn: cartApi.get,
-    staleTime: 5 * 60 * 1000,   // serve from cache for 5 min; mutations call setQueryData directly so this is safe
+    staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    refetchInterval: 60_000,
     enabled: status !== 'loading',
   });
 

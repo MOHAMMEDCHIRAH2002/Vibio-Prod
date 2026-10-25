@@ -185,7 +185,11 @@ export const productsApi = {
   create: (data: any) => request<Product>({ method: 'POST', url: '/products', data }),
   update: (id: string, data: any) =>
     request<Product>({ method: 'PATCH', url: `/products/${id}`, data }),
-  delete: (id: string) => request<void>({ method: 'DELETE', url: `/products/${id}` }),
+  delete: (id: string) =>
+    request<{ id: string; slug: string; deletedAt: string }>({
+      method: 'DELETE',
+      url: `/products/${id}`,
+    }),
   uploadImages: (id: string, files: File[]) => {
     const fd = new FormData();
     files.forEach((f) => fd.append('files', f));
@@ -421,4 +425,3 @@ export const accountApi = {
     request<Address>({ method: 'PATCH', url: `/account/addresses/${id}/default`, data: {} }),
   getCustomer: (id: string) => request<User>({ method: 'GET', url: `/admin/customers/${id}` }),
 };
-

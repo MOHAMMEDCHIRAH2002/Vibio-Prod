@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Image from '@/components/common/OptimizedImage';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { signOut, useSession } from 'next-auth/react';
@@ -27,12 +28,10 @@ import CartDrawer from '@/components/shop/CartDrawer';
 import SearchModal from '@/components/common/SearchModal';
 import BrandLogo from '@/components/common/BrandLogo';
 import VisitStoreCTA from '@/components/store/VisitStoreCTA';
+import { categoriesApi } from '@/lib/api';
 
-const navLinks = [
+const staticNavLinks = [
   { href: '/shop', key: 'nav.shop' },
-  { href: '/shop/dates-sweets', key: 'nav.dates' },
-  { href: '/shop/chocolates', key: 'nav.chocolates' },
-  { href: '/shop/coffee-tea', key: 'nav.coffeeTea' },
   { href: '/gifts', key: 'nav.giftBoxes' },
   { href: '/blog', key: 'nav.journal' },
   { href: '/about', key: 'nav.about' },
@@ -41,6 +40,31 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: categoriesApi.list,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
+  });
+  const categoryLinks = useMemo(
+    () =>
+      (categories ?? []).flatMap((category) =>
+        [category, ...(category.children ?? [])].map((item) => ({
+          href: `/shop/${encodeURIComponent(item.slug)}`,
+          key: item.name,
+          isCategory: true,
+        })),
+      ),
+    [categories],
+  );
+  const navLinks = useMemo(
+    () => [
+      ...staticNavLinks.map((link) => ({ ...link, isCategory: false })),
+      ...categoryLinks,
+    ],
+    [categoryLinks],
+  );
   const { t } = useTranslation();
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -266,7 +290,7 @@ export default function Navbar() {
                                 : 'bg-white/64 text-[#5B6455] hover:bg-[#F7F4EC] hover:text-[#1E2519]',
                             )}
                           >
-                            {t(link.key)}
+                            {link.isCategory ? link.key : t(link.key)}
                           </Link>
                         );
                       })}

@@ -2,16 +2,36 @@
 
 import Image from '@/components/common/OptimizedImage';
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Sparkles, Package, Truck, Leaf } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ProductGrid from '@/components/shop/ProductGrid';
+import { categoriesApi } from '@/lib/api';
 
 interface Props {
   category: any;
 }
 
-export default function CategoryPageClient({ category }: Props) {
+export default function CategoryPageClient({ category: initialCategory }: Props) {
   const { t } = useTranslation();
+  const router = useRouter();
+  const { data: category = initialCategory } = useQuery({
+    queryKey: ['category', initialCategory.slug],
+    queryFn: () => categoriesApi.bySlug(initialCategory.slug),
+    initialData: initialCategory,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
+  });
+
+  useEffect(() => {
+    if (category.slug !== initialCategory.slug) {
+      router.replace(`/shop/${encodeURIComponent(category.slug)}`);
+    }
+  }, [category.slug, initialCategory.slug, router]);
 
   const products = category.products || [];
   const productCount = category._count?.products || products.length || 0;

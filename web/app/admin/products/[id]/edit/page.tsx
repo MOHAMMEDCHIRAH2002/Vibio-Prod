@@ -37,6 +37,7 @@ export default function EditProductPage() {
     description: '',
     categoryId: '',
     isFeatured: false,
+    isActive: true,
     tags: '',
     images: '',
   });
@@ -65,6 +66,7 @@ export default function EditProductPage() {
         description: p.description || '',
         categoryId: p.categoryId || '',
         isFeatured: p.isFeatured ?? false,
+        isActive: p.isActive ?? true,
         tags: (p.tags || []).map((t: any) => t.name || t).join(', '),
         images: (p.images || []).join('\n'),
       });
@@ -81,7 +83,7 @@ export default function EditProductPage() {
         value: v.value,
         price: parseFloat(v.price) || 0,
         stock: parseInt(v.stock) || 0,
-        ...(v.sku ? { sku: v.sku } : {}),
+        sku: v.sku.trim() || null,
       }));
 
       const prices = parsedVariants.map((v) => v.price).filter((p) => p > 0);
@@ -93,6 +95,7 @@ export default function EditProductPage() {
         description: form.description,
         categoryId: form.categoryId || undefined,
         isFeatured: form.isFeatured,
+        isActive: form.isActive,
         basePrice,
         tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
         images: form.images.split('\n').map((u) => u.trim()).filter(Boolean),
@@ -101,10 +104,17 @@ export default function EditProductPage() {
 
       return productsApi.update(id, payload);
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['products'] });
+    onSuccess: async () => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['products'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['admin-products'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['admin-stock'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['product-admin', id], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['products', 'featured'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['categories'], refetchType: 'all' }),
+      ]);
       toast.success('Product updated');
-      router.push('/admin/products');
+      router.replace('/admin/products');
     },
     onError: (err: any) => {
       const messages: string[] = Array.isArray(err?.message)
@@ -326,6 +336,18 @@ export default function EditProductPage() {
                 <div>
                   <p className="text-sm font-medium text-[#3E433E]">Featured product</p>
                   <p className="mt-0.5 text-xs text-[#7A776F]">Shown on the homepage featured section.</p>
+                </div>
+              </label>
+              <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#EDE5DA] bg-white/60 px-4 py-3 transition-colors hover:bg-[#EFF5E7]">
+                <input
+                  type="checkbox"
+                  checked={form.isActive}
+                  onChange={(e) => setField('isActive', e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded accent-[#273E1C]"
+                />
+                <div>
+                  <p className="text-sm font-medium text-[#3E433E]">Active product</p>
+                  <p className="mt-0.5 text-xs text-[#7A776F]">Inactive products are hidden from the storefront.</p>
                 </div>
               </label>
             </div>

@@ -10,13 +10,17 @@ import {
   UseGuards,
   UploadedFiles,
   UseInterceptors,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { UploadService } from '../upload/upload.service';
+import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
 
 @ApiTags('products')
 @Controller('products')
@@ -27,7 +31,9 @@ export class ProductsController {
   ) {}
 
   @Get()
+  @UseGuards(OptionalJwtGuard)
   findAll(
+    @Req() req: Request & { user?: any },
     @Query('page') page = 1,
     @Query('limit') limit = 12,
     @Query('category') category?: string,
@@ -39,6 +45,9 @@ export class ProductsController {
     @Query('sort') sort = 'newest',
   ) {
     const isAdmin = admin === '1' || admin === 'true';
+    if (isAdmin && req.user?.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
     return this.products.findAll({ page: +page, limit: +limit, category, search, minPrice: minPrice ? +minPrice : undefined, maxPrice: maxPrice ? +maxPrice : undefined, inStock, sort, admin: isAdmin });
   }
 
@@ -69,7 +78,7 @@ export class ProductsController {
   @Patch(':id')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
-  update(@Param('id') id: string, @Body() dto: Partial<CreateProductDto>) {
+  update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
     return this.products.update(id, dto);
   }
 

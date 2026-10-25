@@ -27,6 +27,8 @@ export default function AdminOrderDetailPage() {
   const { data: order, isLoading } = useQuery({
     queryKey: ['admin-order', id],
     queryFn: () => ordersApi.adminById(id),
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   });
 
   const [newStatus, setNewStatus] = useState('');
@@ -38,8 +40,15 @@ export default function AdminOrderDetailPage() {
         status: newStatus || (order as any)?.status,
         trackingNumber: trackingNumber || undefined,
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-order', id] });
+    onSuccess: async () => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['admin-order', id], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['admin-orders'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['orders'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['order', id], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['customer-orders'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['stats'], refetchType: 'all' }),
+      ]);
       toast.success('Order updated');
     },
     onError: () => toast.error('Failed to update order'),

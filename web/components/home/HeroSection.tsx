@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Image from '@/components/common/OptimizedImage';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { categoriesApi } from '@/lib/api';
 import { ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────
@@ -45,49 +47,53 @@ const carouselProducts = [
    RIGHT PANEL CATEGORY DATA
    Tab selection switches the displayed product + images
 ───────────────────────────────────────────────────────────── */
-const categoryData = [
-  {
-    id: 'tea',
-    label: 'Tea',
-    tag: 'new season',
-    name: 'Organic Matcha\nCeremonial',
-    price: '12.99€',
-    images: ['/Thes/organic-matcha(1).jpg', '/Thes/gunpowder(1).png'],
-    href: '/shop/coffee-tea',
-  },
-  {
-    id: 'dates',
-    label: 'Dates',
-    tag: 'best seller',
-    name: 'Super Datte\nGingembre',
-    price: '11.99€',
-    images: ['/coffe/super-datte-gingembre.jpg', '/coffe/-super-datte-nature.jpg'],
-    href: '/shop/dates-sweets',
-  },
-  {
-    id: 'choc',
-    label: 'Choc.',
-    tag: 'sale -10%',
-    name: 'Tablette Caramel\nChocolat',
-    price: '6.99€',
-    images: [
-      '/chocolat/tablette-chocolat-caramel.jpg',
-      '/chocolat/tablette-chocolat-blanc-au-matcha.jpg',
-    ],
-    href: '/shop/chocolates',
-  },
-];
-
 /* ─────────────────────────────────────────────────────────────
    HERO SECTION
 ───────────────────────────────────────────────────────────── */
 export default function HeroSection() {
   const { t } = useTranslation();
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: categoriesApi.list,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
+  });
   const [slideIndex, setSlideIndex] = useState(0);
-  const [activeCat, setActiveCat] = useState('tea');
+  const [activeCat, setActiveCat] = useState('');
+
+  const categoryData = (categories ?? []).flatMap((category) =>
+    [category, ...(category.children ?? [])].map((item) => ({
+      id: item.id,
+      label: item.name,
+      tag: item.description || '',
+      name: item.name,
+      price: '',
+      images: item.image ? [item.image] : ['/HeroImg.png'],
+      href: `/shop/${encodeURIComponent(item.slug)}`,
+    })),
+  ).slice(0, 3);
+  const fallbackCategory = {
+    id: 'shop',
+    label: t('nav.shop'),
+    tag: '',
+    name: t('nav.shop'),
+    price: '',
+    images: ['/HeroImg.png'],
+    href: '/shop',
+  };
 
   const product = carouselProducts[slideIndex];
-  const category = categoryData.find((c) => c.id === activeCat)!;
+  const category =
+    categoryData.find((item) => item.id === activeCat) ??
+    categoryData[0] ??
+    fallbackCategory;
+
+  useEffect(() => {
+    if (categoryData.length && !categoryData.some((item) => item.id === activeCat)) {
+      setActiveCat(categoryData[0].id);
+    }
+  }, [activeCat, categoryData]);
 
   const prev = () =>
     setSlideIndex((i) => (i - 1 + carouselProducts.length) % carouselProducts.length);

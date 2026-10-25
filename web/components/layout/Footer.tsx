@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Mail, MapPin, Phone, ArrowRight } from 'lucide-react';
+import { categoriesApi } from '@/lib/api';
 
 const SOCIAL = [
   {
@@ -23,10 +25,7 @@ const SOCIAL = [
 ];
 import BrandLogo from '@/components/common/BrandLogo';
 
-const shopLinks = [
-  { href: '/shop/coffee-tea', key: 'footer.links.coffeeTea' },
-  { href: '/shop/dates-sweets', key: 'footer.links.datesSweets' },
-  { href: '/shop/chocolates', key: 'footer.links.chocolates' },
+const staticShopLinks = [
   { href: '/gifts', key: 'footer.links.giftBoxes' },
 ];
 
@@ -46,6 +45,22 @@ const legalLinks = [
 
 export default function Footer() {
   const { t } = useTranslation();
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: categoriesApi.list,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
+  });
+  const shopLinks = [
+    ...staticShopLinks,
+    ...(categories ?? []).flatMap((category) =>
+      [category, ...(category.children ?? [])].map((item) => ({
+        href: `/shop/${encodeURIComponent(item.slug)}`,
+        key: item.name,
+      })),
+    ),
+  ];
   return (
     <footer className="px-4 pb-6 pt-8 sm:px-6 lg:px-8 lg:pt-10">
       <div className="mx-auto max-w-[1540px]">

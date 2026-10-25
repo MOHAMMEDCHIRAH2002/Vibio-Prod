@@ -1,10 +1,12 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { PrismaService } from '../common/prisma/prisma.service';
 
 @Injectable()
 export class StatsService {
+  private readonly logger = new Logger(StatsService.name);
+
   constructor(
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cache: Cache,
@@ -146,6 +148,10 @@ export class StatsService {
         this.cache.del('stats:revenue:30d'),
         this.cache.del('stats:revenue:90d'),
       ]);
-    } catch {}
+    } catch (error) {
+      this.logger.warn(
+        `Statistics cache invalidation failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 }

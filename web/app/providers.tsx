@@ -26,8 +26,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
           queries: {
             staleTime: 2 * 60 * 1000,
             gcTime: 10 * 60 * 1000,
-            refetchOnWindowFocus: false,
-            refetchOnReconnect: false,
+            refetchOnWindowFocus: true,
+            refetchOnReconnect: true,
             retry: false, // don't retry failed queries — 401s should not be retried
           },
         },

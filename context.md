@@ -1,3 +1,5 @@
+> Current implementation context: [docs/PROJECT_UNDERSTANDING.md](docs/PROJECT_UNDERSTANDING.md). The specification below includes historical assumptions; consult the technical context and source code for current behavior.
+
 # CONTEXT.md — Luxury E-commerce Platform
 
 ## Brand Identity

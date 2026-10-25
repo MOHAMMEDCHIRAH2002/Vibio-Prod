@@ -16,15 +16,36 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-products', search, page],
     queryFn: () => productsApi.list({ search: search || undefined, page, limit: 15, admin: true }),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => productsApi.delete(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-products'] });
+    onSuccess: async (deletedProduct) => {
+      qc.setQueriesData(
+        { queryKey: ['admin-products'] },
+        (current: any) => current
+          ? {
+              ...current,
+              products: current.products?.filter(
+                (product: any) => product.id !== deletedProduct.id,
+              ),
+            }
+          : current,
+      );
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['admin-stock'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['products'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['products', 'featured'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['categories'], refetchType: 'all' }),
+        qc.refetchQueries({ queryKey: ['admin-products'], type: 'active' }),
+      ]);
       toast.success(t('admin.productsPage.removed'));
     },
     onError: () => toast.error(t('admin.productsPage.removeFailed')),
@@ -87,7 +108,16 @@ export default function AdminProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading
+              {isError ? (
+                <tr>
+                  <td colSpan={6} className="py-10 text-center">
+                    <p className="text-sm text-[#8A3E25]">Could not load products. Please try again.</p>
+                    <button onClick={() => refetch()} className="admin-btn-secondary mt-3">
+                      Retry
+                    </button>
+                  </td>
+                </tr>
+              ) : isLoading
                 ? Array.from({ length: 8 }).map((_, index) => (
                     <tr key={index}>
                       {[1, 2, 3, 4, 5, 6].map((cell) => (

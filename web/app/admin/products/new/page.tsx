@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { categoriesApi, productsApi } from '@/lib/api';
 import { toast } from 'sonner';
@@ -26,6 +26,7 @@ const emptyVariant = (): Variant => ({
 
 export default function NewProductPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [form, setForm] = useState({
     name: '',
@@ -70,9 +71,16 @@ export default function NewProductPage() {
 
       return productsApi.create(payload);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['admin-products'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['admin-stock'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['products'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['products', 'featured'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['categories'], refetchType: 'all' }),
+      ]);
       toast.success('Product created successfully');
-      router.push('/admin/products');
+      router.replace('/admin/products');
     },
     onError: (err: any) => {
       const messages: string[] = Array.isArray(err?.message)
@@ -107,7 +115,8 @@ export default function NewProductPage() {
   const canSubmit =
     form.name &&
     form.slug &&
-    variants.some((v) => v.name && v.value && v.price);
+    form.categoryId &&
+    variants.some((v) => v.name && v.value && Number(v.price) > 0);
 
   return (
     <div className="admin-page">
@@ -292,7 +301,7 @@ export default function NewProductPage() {
                   onChange={(e) => setField('categoryId', e.target.value)}
                   className="admin-select"
                 >
-                  <option value="">No category</option>
+                  <option value="">Select a category</option>
                   {categories.map((category: any) => (
                     <option key={category.id} value={category.id}>
                       {category.name}

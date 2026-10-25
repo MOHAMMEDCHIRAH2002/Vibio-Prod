@@ -2,6 +2,7 @@ import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@n
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 import { AdminGuard } from '../auth/guards/admin.guard';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 
 @ApiTags('categories')
 @Controller('categories')
@@ -21,14 +22,14 @@ export class CategoriesController {
   @Post()
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
-  create(@Body() data: any) {
+  create(@Body() data: CreateCategoryDto) {
     return this.categories.create(data);
   }
 
   @Patch(':id')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
-  update(@Param('id') id: string, @Body() data: any) {
+  update(@Param('id') id: string, @Body() data: UpdateCategoryDto) {
     return this.categories.update(id, data);
   }
 

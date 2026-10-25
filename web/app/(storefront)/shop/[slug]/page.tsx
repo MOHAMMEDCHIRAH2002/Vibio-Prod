@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { SERVER_API_URL } from '@/lib/serverApiUrl';
 import CategoryPageClient from './CategoryPageClient';
 
@@ -10,7 +10,7 @@ interface Props {
 async function getCategory(slug: string) {
   try {
     const res = await fetch(`${SERVER_API_URL}/api/categories/${slug}`, {
-      next: { revalidate: 300 },
+      cache: 'no-store',
     });
 
     if (!res.ok) return null;
@@ -34,12 +34,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export const revalidate = 300;
-
 export default async function CategoryPage({ params }: Props) {
   const category = await getCategory(params.slug);
 
   if (!category) notFound();
+  if (category.slug !== params.slug) {
+    redirect(`/shop/${encodeURIComponent(category.slug)}`);
+  }
 
   return <CategoryPageClient category={category} />;
 }

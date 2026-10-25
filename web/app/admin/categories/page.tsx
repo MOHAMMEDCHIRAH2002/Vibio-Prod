@@ -20,38 +20,54 @@ export default function AdminCategoriesPage() {
   const { data: categories, isLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: categoriesApi.list,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
   });
 
   const createMutation = useMutation({
     mutationFn: () => categoriesApi.create(form),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories'] });
+    onSuccess: async () => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['categories'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['products'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['admin-products'], refetchType: 'all' }),
+      ]);
       setShowForm(false);
       setForm(emptyForm);
       toast.success(t('admin.categoriesPage.created'));
     },
-    onError: () => toast.error(t('admin.categoriesPage.createFailed')),
+    onError: (error: any) => toast.error(error?.message || t('admin.categoriesPage.createFailed')),
   });
 
   const updateMutation = useMutation({
     mutationFn: () => categoriesApi.update(editId!, form),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories'] });
+    onSuccess: async () => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['categories'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['products'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['admin-products'], refetchType: 'all' }),
+      ]);
       setEditId(null);
       setShowForm(false);
       setForm(emptyForm);
       toast.success(t('admin.categoriesPage.updated'));
     },
-    onError: () => toast.error(t('admin.categoriesPage.updateFailed')),
+    onError: (error: any) => toast.error(error?.message || t('admin.categoriesPage.updateFailed')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => categoriesApi.delete(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories'] });
+    onSuccess: async () => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['categories'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['products'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['admin-products'], refetchType: 'all' }),
+      ]);
       toast.success(t('admin.categoriesPage.removed'));
     },
-    onError: () => toast.error(t('admin.categoriesPage.removeFailed')),
+    onError: (error: any) => toast.error(error?.message || t('admin.categoriesPage.removeFailed')),
   });
 
   const cats = (categories as any) || [];
