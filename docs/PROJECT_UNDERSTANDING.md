@@ -141,7 +141,7 @@ Prisma uses PostgreSQL, CUID identifiers, mapped snake_case table names, and `De
 | `PromoCode` | Percentage/fixed/free-shipping, date window, minimum spend, optional discount cap and usage limit |
 | `LoyaltyTransaction` | Signed EARN/REDEEM/REVERSE ledger linked to user and optionally order |
 | `Review` | One review per user/product, approval flag, optional displayed reviewer name |
-| `Wishlist` | Unique user/product pair |
+| `Wishlist` | Unique user/product pair; product deletion removes wishlist entries while preserving historical order snapshots |
 | `Banner` | Desktop/mobile images, CTA, schedule and active/order fields |
 | `BlogPost` | DRAFT/SCHEDULED/PUBLISHED/ARCHIVED status, publish/schedule dates, tags and SEO fields |
 | `Submission` | Request type, contact/message fields, optional user/order/product IDs, metadata and handled flag |

@@ -13,9 +13,10 @@ export function useWishlist() {
     queryFn: wishlistApi.get,
     // Only fire when the session is fully established AND has a valid token
     enabled: status === 'authenticated' && !!session?.accessToken && !session?.error,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
     retry: false,
   });
 

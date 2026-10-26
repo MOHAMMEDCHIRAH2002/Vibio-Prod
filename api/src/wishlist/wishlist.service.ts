@@ -7,7 +7,12 @@ export class WishlistService {
 
   async get(userId: string) {
     return this.prisma.wishlist.findMany({
-      where: { userId },
+      where: {
+        userId,
+        product: {
+          is: { isActive: true, deletedAt: null },
+        },
+      },
       include: {
         product: {
           include: { variants: { orderBy: { price: 'asc' } } },

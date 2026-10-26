@@ -109,29 +109,49 @@ export class NotificationsService {
     html: string;
     context: string;
   }): Promise<EmailOutcome> {
-    const result = await this.email.send({
-      to: opts.to,
-      subject: opts.subject,
-      html: opts.html,
-    });
+    const selectedProvider = this.email.providerName;
+    this.logger.log(
+      `Email attempt started: provider=${selectedProvider}, context="${opts.context}", recipientConfigured=${Boolean(opts.to)}`,
+    );
 
-    if (result.skipped) {
-      this.logger.warn(
-        `Email skipped (${opts.context}) — ${result.error || 'provider not configured'}`,
-      );
-      return 'skipped';
-    }
-    if (!result.ok) {
+    try {
+      const result = await this.email.send({
+        to: opts.to,
+        subject: opts.subject,
+        html: opts.html,
+      });
+      const outcome: EmailOutcome = result.skipped
+        ? 'skipped'
+        : result.ok
+          ? 'sent'
+          : 'failed';
+      const errorType = result.errorType
+        ? result.errorType.replace(/[^A-Za-z0-9_.-]/g, '_')
+        : result.skipped
+          ? 'Skipped'
+          : 'none';
+      const message =
+        `Email attempt completed: provider=${result.provider}, outcome=${outcome}, ` +
+        `success=${outcome === 'sent'}, errorType=${errorType}, context="${opts.context}"`;
+
+      if (outcome === 'failed') this.logger.error(message);
+      else if (outcome === 'skipped') this.logger.warn(message);
+      else this.logger.log(message);
+
+      return outcome;
+    } catch (error) {
+      const errorType =
+        error instanceof Error
+          ? error.name.replace(/[^A-Za-z0-9_.-]/g, '_')
+          : typeof error === 'string'
+            ? 'Error'
+            : 'UnknownError';
       this.logger.error(
-        `Email REJECTED via ${result.provider} (${opts.context}) → ${opts.to}: ${result.error}`,
+        `Email attempt completed: provider=${selectedProvider}, outcome=failed, success=false, ` +
+          `errorType=${errorType}, context="${opts.context}"`,
       );
       return 'failed';
     }
-
-    this.logger.log(
-      `Email sent via ${result.provider} (${opts.context}) → ${opts.to} [id: ${result.id ?? 'n/a'}]`,
-    );
-    return 'sent';
   }
 
   /** Absolute admin URL for a given path (e.g. `/admin/orders/123`). */
@@ -148,7 +168,7 @@ export class NotificationsService {
       to: email,
       subject: `Welcome to Vibio, ${name}! ✨`,
       html: this.welcomeTemplate(name),
-      context: `welcome: ${name}`,
+      context: 'welcome',
     });
   }
 
@@ -310,7 +330,7 @@ export class NotificationsService {
       to: email,
       subject: 'Reset your Vibio password',
       html: this.passwordResetTemplate(name, resetUrl),
-      context: `password reset: ${email}`,
+      context: 'password reset',
     });
   }
 

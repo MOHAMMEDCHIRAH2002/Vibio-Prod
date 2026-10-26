@@ -30,6 +30,7 @@ export interface EmailResult {
   provider: string;
   id?: string;
   error?: string;
+  errorType?: string;
   skipped?: boolean;
 }
 
@@ -67,6 +68,7 @@ class ResendProvider implements EmailProvider {
         ok: false,
         provider: this.name,
         error: `${e.statusCode ?? '?'} ${e.name ?? ''} — ${e.message ?? JSON.stringify(error)}`.trim(),
+        errorType: e.name || 'ProviderError',
       };
     }
     return { ok: true, provider: this.name, id: data?.id };
@@ -108,6 +110,9 @@ class SmtpProvider implements EmailProvider {
         secure: this.secure,
         auth: { user: this.user, pass: this.pass },
         pool: true,
+        connectionTimeout: 10_000,
+        greetingTimeout: 10_000,
+        socketTimeout: 15_000,
       });
     }
     return this.transporter;
@@ -128,6 +133,7 @@ class SmtpProvider implements EmailProvider {
         ok: false,
         provider: this.name,
         error: `server rejected recipient(s): ${info.rejected.join(', ')}`,
+        errorType: 'RecipientRejected',
       };
     }
     return { ok: true, provider: this.name, id: info.messageId };
@@ -147,9 +153,7 @@ class LogProvider implements EmailProvider {
   constructor(private logger: Logger) {}
 
   async send(msg: EmailMessage): Promise<EmailResult> {
-    this.logger.warn(
-      `[email:log] no provider configured — would send to ${msg.to}: "${msg.subject}"`,
-    );
+    this.logger.warn('[email:log] no provider configured; email skipped');
     return { ok: true, provider: this.name, skipped: true };
   }
 }
@@ -161,10 +165,6 @@ export class EmailService {
 
   constructor(private config: ConfigService) {
     this.provider = this.selectProvider();
-    this.logger.log(
-      `Email provider: ${this.provider.name}` +
-        (this.provider.configured ? '' : ' (not configured — messages will be logged only)'),
-    );
   }
 
   /**
@@ -174,7 +174,10 @@ export class EmailService {
    * to a log-only provider so calls never fail where email isn't configured.
    */
   private selectProvider(): EmailProvider {
-    const requested = (this.config.get<string>('EMAIL_PROVIDER') || 'auto').toLowerCase();
+    const configuredProvider = (this.config.get<string>('EMAIL_PROVIDER') || 'auto').toLowerCase();
+    const requested = ['auto', 'resend', 'smtp'].includes(configuredProvider)
+      ? configuredProvider
+      : 'auto';
 
     const resend = new ResendProvider(this.config.get<string>('RESEND_API_KEY') || '');
     const smtp = new SmtpProvider(
@@ -185,21 +188,43 @@ export class EmailService {
       this.config.get<string>('SMTP_PASS') || '',
     );
 
+    let selected: EmailProvider;
     if (requested === 'resend') {
-      if (resend.configured) return resend;
-      this.logger.warn('EMAIL_PROVIDER=resend but RESEND_API_KEY is not set');
-      return new LogProvider(this.logger);
-    }
-    if (requested === 'smtp') {
-      if (smtp.configured) return smtp;
-      this.logger.warn('EMAIL_PROVIDER=smtp but SMTP_HOST/SMTP_USER/SMTP_PASS are incomplete');
-      return new LogProvider(this.logger);
+      selected = resend.configured ? resend : new LogProvider(this.logger);
+      if (!resend.configured) this.logger.warn('EMAIL_PROVIDER=resend but RESEND_API_KEY is not set');
+    } else if (requested === 'smtp') {
+      selected = smtp.configured ? smtp : new LogProvider(this.logger);
+      if (!smtp.configured) this.logger.warn('EMAIL_PROVIDER=smtp but SMTP_HOST/SMTP_USER/SMTP_PASS are incomplete');
+    } else {
+      // auto — preserves pre-SMTP behaviour by preferring Resend.
+      selected = resend.configured
+        ? resend
+        : smtp.configured
+          ? smtp
+          : new LogProvider(this.logger);
     }
 
-    // auto — preserves pre-SMTP behaviour by preferring Resend.
-    if (resend.configured) return resend;
-    if (smtp.configured) return smtp;
-    return new LogProvider(this.logger);
+    const isVercel = this.config.get<string>('VERCEL') === '1';
+    if (isVercel && selected.name === 'smtp' && resend.configured) {
+      this.logger.warn(
+        'SMTP was requested on Vercel; using configured Resend provider because outbound SMTP may be restricted.',
+      );
+      selected = resend;
+    }
+    this.logger.log(
+      `Email runtime config: platform=${isVercel ? 'vercel' : 'node'}, requestedProvider=${configuredProvider}, ` +
+        `selectedProvider=${selected.name}, smtpConfigured=${smtp.configured}, ` +
+        `resendConfigured=${resend.configured}`,
+    );
+    if (configuredProvider !== requested) {
+      this.logger.warn('EMAIL_PROVIDER value is not recognized; using automatic provider selection.');
+    }
+    if (isVercel && selected.name === 'smtp') {
+      this.logger.warn(
+        'SMTP is selected on Vercel without a configured Resend fallback; outbound SMTP may be restricted.',
+      );
+    }
+    return selected;
   }
 
   get providerName() {
@@ -223,10 +248,12 @@ export class EmailService {
     try {
       return await this.provider.send({ ...msg, from: msg.from || this.from });
     } catch (e: any) {
-      // Transport-level failure (DNS, TLS, auth, timeout). The message may embed
-      // the server's response, so it is surfaced as-is — credentials are never
-      // included in nodemailer/Resend error text.
-      return { ok: false, provider: this.provider.name, error: e?.message || String(e) };
+      return {
+        ok: false,
+        provider: this.provider.name,
+        error: e?.message || String(e),
+        errorType: e?.code || e?.name || 'UnknownError',
+      };
     }
   }
 }

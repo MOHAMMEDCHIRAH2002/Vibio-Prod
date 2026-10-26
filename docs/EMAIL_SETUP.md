@@ -22,10 +22,11 @@ Vibio uses [Resend](https://resend.com) to send transactional emails (order conf
 2. Name it `vibio-api`, permission: **Sending access**
 3. Copy the key (shown only once)
 
-## 4. Add the key to the API environment file
+## 4. Configure the API runtime
 
-In `api/.env`:
+For local development, add these values to `api/.env`:
 ```env
+EMAIL_PROVIDER=resend
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 EMAIL_FROM=orders@vibio.ma
 ```
@@ -36,12 +37,23 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 EMAIL_FROM=onboarding@resend.dev
 ```
 
+For production, set `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `EMAIL_FROM`
+in the environment of the **API deployment** (not only the web app's Vercel
+project). Vercel deployments should use Resend's HTTPS API rather than SMTP,
+which can be blocked by outbound SMTP restrictions. The API startup log reports
+the selected provider and whether required settings are present, without logging
+secret values. Each attempted email logs its provider, outcome, and error type.
+Order email sends are awaited before the API response; delivery failures are
+caught and logged so they do not fail checkout. They are not background promises
+that need Vercel `waitUntil`.
+
 ## 5. Email templates
 
 Order confirmation and shipping update templates are defined in:
 - `api/src/notifications/notifications.service.ts`
 
-The service uses the Resend Node.js SDK. To modify the email HTML, edit the `html` field inside `sendOrderConfirmation` and `sendShippingUpdate`.
+The service uses the Resend Node.js SDK or SMTP according to `EMAIL_PROVIDER`.
+To modify the email HTML, edit the templates in `notifications.service.ts`.
 
 ## 6. WhatsApp notifications (optional)
 
@@ -52,4 +64,4 @@ TWILIO_AUTH_TOKEN=your-auth-token
 TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
 ```
 
-If these variables are absent, WhatsApp messages are silently skipped and email-only mode applies.
+If these variables are absent, WhatsApp messages are skipped and email-only mode applies.

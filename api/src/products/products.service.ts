@@ -214,10 +214,14 @@ export class ProductsService {
   }
 
   async remove(id: string) {
-    const product = await this.prisma.product.update({
-      where: { id },
-      data: { isActive: false, deletedAt: new Date() },
-      select: { id: true, slug: true, deletedAt: true },
+    const product = await this.prisma.$transaction(async (tx) => {
+      const deleted = await tx.product.update({
+        where: { id },
+        data: { isActive: false, deletedAt: new Date() },
+        select: { id: true, slug: true, deletedAt: true },
+      });
+      await tx.wishlist.deleteMany({ where: { productId: id } });
+      return deleted;
     });
     await this.invalidateProductCaches(product.slug);
     return product;
