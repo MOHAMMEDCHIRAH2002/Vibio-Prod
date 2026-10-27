@@ -43,6 +43,10 @@ project). Vercel deployments should use Resend's HTTPS API rather than SMTP,
 which can be blocked by outbound SMTP restrictions. The API startup log reports
 the selected provider and whether required settings are present, without logging
 secret values. Each attempted email logs its provider, outcome, and error type.
+On Resend failures, logs include a sanitized provider message and HTTP status.
+For `validation_error`, check that the `EMAIL_FROM` domain is verified in the
+Resend account that owns `RESEND_API_KEY`; with a testing sender, Resend may only
+allow delivery to the account's own address.
 Order email sends are awaited before the API response; delivery failures are
 caught and logged so they do not fail checkout. They are not background promises
 that need Vercel `waitUntil`.

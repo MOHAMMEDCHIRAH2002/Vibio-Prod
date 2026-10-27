@@ -31,6 +31,7 @@ export interface EmailResult {
   id?: string;
   error?: string;
   errorType?: string;
+  statusCode?: number;
   skipped?: boolean;
 }
 
@@ -64,11 +65,18 @@ class ResendProvider implements EmailProvider {
 
     if (error) {
       const e = error as any;
+      const message = String(e.message ?? '');
+      const errorType = /only send testing emails|verify (your )?(sending )?domain|domain .*not verified/i.test(
+        message,
+      )
+        ? 'sender_or_recipient_not_verified'
+        : e.name || 'ProviderError';
       return {
         ok: false,
         provider: this.name,
-        error: `${e.statusCode ?? '?'} ${e.name ?? ''} — ${e.message ?? JSON.stringify(error)}`.trim(),
-        errorType: e.name || 'ProviderError',
+        error: message || JSON.stringify(error),
+        errorType,
+        statusCode: typeof e.statusCode === 'number' ? e.statusCode : undefined,
       };
     }
     return { ok: true, provider: this.name, id: data?.id };
@@ -214,7 +222,7 @@ export class EmailService {
     this.logger.log(
       `Email runtime config: platform=${isVercel ? 'vercel' : 'node'}, requestedProvider=${configuredProvider}, ` +
         `selectedProvider=${selected.name}, smtpConfigured=${smtp.configured}, ` +
-        `resendConfigured=${resend.configured}`,
+        `resendConfigured=${resend.configured}, senderDomain=${this.senderDomain() || 'default'}`,
     );
     if (configuredProvider !== requested) {
       this.logger.warn('EMAIL_PROVIDER value is not recognized; using automatic provider selection.');
@@ -234,6 +242,11 @@ export class EmailService {
   /** Default sender, shared by every template. */
   get from(): string {
     return this.config.get<string>('EMAIL_FROM') || 'noreply@vibio.com';
+  }
+
+  private senderDomain(): string | undefined {
+    const address = this.from.match(/<([^>]+)>/)?.[1] || this.from;
+    return address.match(/@([^>\s]+)/)?.[1];
   }
 
   /**

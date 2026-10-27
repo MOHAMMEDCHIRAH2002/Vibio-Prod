@@ -130,9 +130,14 @@ export class NotificationsService {
         : result.skipped
           ? 'Skipped'
           : 'none';
+      const errorDetails = result.error
+        ? this.safeEmailError(result.error)
+        : 'none';
       const message =
         `Email attempt completed: provider=${result.provider}, outcome=${outcome}, ` +
-        `success=${outcome === 'sent'}, errorType=${errorType}, context="${opts.context}"`;
+        `success=${outcome === 'sent'}, errorType=${errorType}, ` +
+        `statusCode=${result.statusCode ?? 'none'}, errorDetails="${errorDetails}", ` +
+        `context="${opts.context}"`;
 
       if (outcome === 'failed') this.logger.error(message);
       else if (outcome === 'skipped') this.logger.warn(message);
@@ -148,10 +153,29 @@ export class NotificationsService {
             : 'UnknownError';
       this.logger.error(
         `Email attempt completed: provider=${selectedProvider}, outcome=failed, success=false, ` +
-          `errorType=${errorType}, context="${opts.context}"`,
+          `errorType=${errorType}, errorDetails="${this.safeEmailError(
+            error instanceof Error ? error.message : String(error),
+          )}", context="${opts.context}"`,
       );
       return 'failed';
     }
+  }
+
+  private safeEmailError(message: string): string {
+    let safeMessage = message;
+    for (const secret of [
+      this.config.get<string>('RESEND_API_KEY'),
+      this.config.get<string>('SMTP_PASS'),
+      this.config.get<string>('SMTP_USER'),
+    ]) {
+      if (secret) safeMessage = safeMessage.split(secret).join('[REDACTED]');
+    }
+
+    return safeMessage
+      .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[email]')
+      .replace(/\b(re_[A-Za-z0-9_-]+|Bearer\s+\S+)\b/gi, '[REDACTED]')
+      .replace(/[\r\n\t]+/g, ' ')
+      .slice(0, 300);
   }
 
   /** Absolute admin URL for a given path (e.g. `/admin/orders/123`). */
