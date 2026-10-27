@@ -37,16 +37,18 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 EMAIL_FROM=onboarding@resend.dev
 ```
 
-For production, set `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `EMAIL_FROM`
-in the environment of the **API deployment** (not only the web app's Vercel
-project). Vercel deployments should use Resend's HTTPS API rather than SMTP,
-which can be blocked by outbound SMTP restrictions. The API startup log reports
-the selected provider and whether required settings are present, without logging
-secret values. Each attempted email logs its provider, outcome, and error type.
-On Resend failures, logs include a sanitized provider message and HTTP status.
-For `validation_error`, check that the `EMAIL_FROM` domain is verified in the
-Resend account that owns `RESEND_API_KEY`; with a testing sender, Resend may only
-allow delivery to the account's own address.
+For production SMTP delivery, set `EMAIL_PROVIDER=smtp`, `SMTP_HOST`,
+`SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, and `EMAIL_FROM` in the
+environment of the **API deployment**. `EMAIL_PROVIDER=smtp` strictly selects
+SMTP: the application does not fall back to Resend if SMTP is unavailable or
+fails authentication. A `EAUTH` result means the SMTP server rejected the
+credentials; check the mailbox's SMTP authentication settings and runtime
+environment values in the API host.
+
+The API startup log reports the selected provider and whether required settings
+are present, without logging secret values. Each attempted email logs its
+provider, outcome, and error type. Resend is used only when `EMAIL_PROVIDER` is
+explicitly `resend` or `auto` selects it.
 Order email sends are awaited before the API response; delivery failures are
 caught and logged so they do not fail checkout. They are not background promises
 that need Vercel `waitUntil`.

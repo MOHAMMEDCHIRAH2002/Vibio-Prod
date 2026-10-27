@@ -213,12 +213,6 @@ export class EmailService {
     }
 
     const isVercel = this.config.get<string>('VERCEL') === '1';
-    if (isVercel && selected.name === 'smtp' && resend.configured) {
-      this.logger.warn(
-        'SMTP was requested on Vercel; using configured Resend provider because outbound SMTP may be restricted.',
-      );
-      selected = resend;
-    }
     this.logger.log(
       `Email runtime config: platform=${isVercel ? 'vercel' : 'node'}, requestedProvider=${configuredProvider}, ` +
         `selectedProvider=${selected.name}, smtpConfigured=${smtp.configured}, ` +
@@ -226,11 +220,6 @@ export class EmailService {
     );
     if (configuredProvider !== requested) {
       this.logger.warn('EMAIL_PROVIDER value is not recognized; using automatic provider selection.');
-    }
-    if (isVercel && selected.name === 'smtp') {
-      this.logger.warn(
-        'SMTP is selected on Vercel without a configured Resend fallback; outbound SMTP may be restricted.',
-      );
     }
     return selected;
   }
