@@ -114,7 +114,7 @@ The global ValidationPipe strips/forbids unknown DTO fields and enables transfor
 | `/categories` | Public reads; admin writes |
 | `/cart`, `/cart/items/:variantId` | Optional JWT, otherwise `x-session-id`; `/cart/merge` requires JWT |
 | `/orders`, `/orders/:id` | JWT; customer order list/detail/create |
-| `/admin/orders`, `/admin/orders/:id/status` | Admin list/detail and status changes |
+| `/admin/orders`, `/admin/orders/:id`, `/admin/orders/:id/status` | Admin list/detail/status plus manual order creation and item, customer, shipping and notes updates |
 | `/wishlist`, `/wishlist/:productId` | JWT; read/toggle/remove |
 | `/products/:id/reviews`, `/reviews/recent` | Public review reads; JWT submission; admin moderation under `/admin/reviews` |
 | `/account/profile`, `/account/addresses` | JWT profile/address operations |
@@ -184,6 +184,8 @@ Adding/changing quantity checks variant availability and stock. The frontend mer
 7. After commit, Redis cart clearing and customer/owner notifications run. These steps are outside the database transaction.
 
 Admin status changes set payment to PAID on DELIVERED and REFUNDED on REFUNDED, trigger loyalty award/reversal and send a shipping email on SHIPPED. The current path does not restore stock or promo usage on cancellation/refund and does not enforce a full status transition graph.
+
+Admins can create manual orders for existing customer accounts. Creation uses active catalog variants and current prices, reserves stock transactionally, defaults to PENDING cash-on-delivery, and attempts customer and owner notifications after commit. Editing an order adjusts stock only by item quantity differences, keeps prices for unchanged lines, uses current prices for changed lines, and recalculates shipping and totals. Customer reassignment also transfers any net order loyalty ledger balance when the resulting customer balances remain non-negative. Editing paid/delivered/refunded/cancelled orders does not collect or refund payment automatically.
 
 ### Promotions and loyalty
 
@@ -296,7 +298,7 @@ These observations come from source inspection and are not fixes made by this do
 
 ## 13. Verification and a starting point for later work
 
-The implementation work inspected and updated the catalog, category, cart, order, statistics and navigation flows, along with the schema and this document. No live database or external service was contacted. API/web builds and Prisma validation could not run because the command runner has no PowerShell executable. Automated regression tests and browser/runtime flows remain unverified.
+The implementation work inspected and updated the catalog, category, cart, order, statistics and navigation flows, along with the schema and this document. The API and web production builds completed for the admin-order changes; web prerendering logged connection-refused fetch warnings but still generated all static pages and completed. No live database or external service was contacted, so order mutations and browser/runtime flows remain unverified.
 
 No test/spec files were found in the inspected repository file inventory. The API declares `test: jest` without declaring Jest itself in package dependencies. Do not treat that script as evidence of a working suite. Future code changes should run the relevant app build/type checks and focused flow checks; inspect lint configuration first because backend lint uses `--fix` and frontend builds skip lint.
 

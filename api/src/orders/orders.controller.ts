@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { AdminOrderDto } from './dto/admin-order.dto';
 
 @ApiTags('orders')
 @ApiBearerAuth()
@@ -68,6 +69,18 @@ export class OrdersController {
   @UseGuards(AdminGuard)
   findOne(@Param('id') id: string) {
     return this.orders.findOne(id);
+  }
+
+  @Post('admin/orders')
+  @UseGuards(AdminGuard)
+  createAdminOrder(@Body() body: AdminOrderDto) {
+    return this.orders.createAdminOrder(body);
+  }
+
+  @Patch('admin/orders/:id')
+  @UseGuards(AdminGuard)
+  updateAdminOrder(@Param('id') id: string, @Body() body: AdminOrderDto) {
+    return this.orders.updateAdminOrder(id, body);
   }
 
   @Patch('admin/orders/:id/status')

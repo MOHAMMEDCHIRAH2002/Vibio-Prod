@@ -6,7 +6,19 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { PromoService } from '../promo/promo.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
 import { StatsService } from '../stats/stats.service';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus, Prisma } from '@prisma/client';
+import { AdminOrderDto } from './dto/admin-order.dto';
+import { pointsForAmount } from '../loyalty/loyalty.config';
+
+type ResolvedAdminOrderItem = {
+  productId: string;
+  variantId: string;
+  name: string;
+  variantName: string;
+  price: number;
+  quantity: number;
+  image?: string;
+};
 
 @Injectable()
 export class OrdersService {
@@ -345,6 +357,340 @@ export class OrdersService {
     ]);
 
     return { orders, total, page, pages: Math.ceil(total / limit) };
+  }
+
+  async createAdminOrder(data: AdminOrderDto) {
+    const user = await this.prisma.user.findFirst({
+      where: { id: data.userId, role: 'CUSTOMER' },
+      select: { id: true, email: true, name: true, phone: true },
+    });
+    if (!user) throw new NotFoundException('Customer not found');
+
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    const createdOrderId = await this.prisma.$transaction(async (tx) => {
+      const items = await this.resolveAdminOrderItems(tx, data.items);
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const shippingCost = subtotal > 500 ? 0 : 50;
+
+      await this.claimAdminOrderStock(tx, items);
+      const created = await tx.order.create({
+        data: {
+          orderNumber,
+          userId: user.id,
+          status: 'PENDING',
+          paymentStatus: 'PENDING',
+          paymentMethod: 'cod',
+          shippingAddress: { ...data.shippingAddress },
+          subtotal,
+          shippingCost,
+          discount: 0,
+          loyaltyDiscount: 0,
+          total: subtotal + shippingCost,
+          notes: data.notes,
+          items: { create: items },
+        },
+      });
+      return created.id;
+    });
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: createdOrderId },
+      include: { items: true, user: { select: { name: true, email: true, phone: true } } },
+    });
+    if (!order) throw new NotFoundException('Created order not found');
+
+    await this.stats.invalidate();
+    try {
+      await this.notifications.sendOrderConfirmation(user.email, {
+        orderNumber,
+        name: user.name || 'Customer',
+        total: Number(order.total),
+        itemCount: order.items.length,
+        items: order.items,
+        shippingAddress: order.shippingAddress,
+      });
+    } catch (error: any) {
+      this.logger.error(`Admin-created order email failed for ${orderNumber}: ${error?.name || 'UnknownError'}`);
+    }
+    await this.notifyAdminOnce(order.id);
+    return order;
+  }
+
+  async updateAdminOrder(id: string, data: AdminOrderDto) {
+    const order = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.order.findUnique({
+        where: { id },
+        include: { items: true },
+      });
+      if (!existing) throw new NotFoundException('Order not found');
+
+      const user = await tx.user.findUnique({
+        where: { id: data.userId },
+        select: { id: true, role: true },
+      });
+      if (!user || (user.role === 'ADMIN' && user.id !== existing.userId)) {
+        throw new NotFoundException('Customer not found');
+      }
+
+      const items = await this.resolveAdminOrderItems(tx, data.items, existing.items);
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const shippingCost = subtotal > 500 ? 0 : 50;
+      const previousQuantities = this.sumOrderItemQuantities(existing.items);
+      const nextQuantities = this.sumOrderItemQuantities(items);
+
+      await this.applyAdminOrderStockDelta(tx, previousQuantities, nextQuantities);
+
+      const loyaltyEligible =
+        (existing.status === 'DELIVERED' || existing.paymentStatus === 'PAID') &&
+        existing.status !== 'CANCELLED' &&
+        existing.status !== 'REFUNDED' &&
+        existing.paymentStatus !== 'REFUNDED' &&
+        existing.paymentStatus !== 'FAILED';
+      if (loyaltyEligible) {
+        const [earnedEntries, oldCustomer] = await Promise.all([
+          tx.loyaltyTransaction.findMany({
+            where: { orderId: id, type: 'EARN' },
+            select: { points: true },
+          }),
+          tx.user.findUnique({
+            where: { id: existing.userId },
+            select: { loyaltyPoints: true },
+          }),
+        ]);
+        const previousEarned = earnedEntries.reduce((sum, entry) => sum + entry.points, 0);
+        const eligibleSubtotal = Math.max(
+          0,
+          subtotal - Number(existing.discount) - Number(existing.loyaltyDiscount),
+        );
+        const adjustedEarned = pointsForAmount(eligibleSubtotal);
+        const earnDelta = adjustedEarned - previousEarned;
+        if (earnDelta < 0 && (!oldCustomer || oldCustomer.loyaltyPoints < -earnDelta)) {
+          throw new BadRequestException('The order total cannot be reduced because the earned loyalty points have already been spent');
+        }
+        if (earnDelta !== 0) {
+          await tx.user.update({
+            where: { id: existing.userId },
+            data: { loyaltyPoints: { increment: earnDelta } },
+          });
+          await tx.loyaltyTransaction.create({
+            data: {
+              userId: existing.userId,
+              orderId: id,
+              type: earnDelta > 0 ? 'EARN' : 'REVERSE',
+              points: earnDelta,
+              reason: `Admin adjustment for order ${existing.orderNumber}`,
+            },
+          });
+          await tx.order.update({ where: { id }, data: { pointsEarned: adjustedEarned } });
+        }
+      }
+
+      if (existing.userId !== user.id) {
+        const loyaltyEntries = await tx.loyaltyTransaction.findMany({
+          where: { orderId: id },
+          select: { id: true, userId: true, points: true },
+        });
+        const pointsTransfer = loyaltyEntries.reduce((sum, entry) => sum + entry.points, 0);
+        if (pointsTransfer !== 0) {
+          const [oldCustomer, newCustomer] = await Promise.all([
+            tx.user.findUnique({ where: { id: existing.userId }, select: { loyaltyPoints: true } }),
+            tx.user.findUnique({ where: { id: user.id }, select: { loyaltyPoints: true } }),
+          ]);
+          if (
+            !oldCustomer ||
+            !newCustomer ||
+            oldCustomer.loyaltyPoints - pointsTransfer < 0 ||
+            newCustomer.loyaltyPoints + pointsTransfer < 0
+          ) {
+            throw new BadRequestException('Customer cannot be changed because the loyalty balance cannot be transferred safely');
+          }
+          await tx.user.update({
+            where: { id: existing.userId },
+            data: { loyaltyPoints: { decrement: pointsTransfer } },
+          });
+          await tx.user.update({
+            where: { id: user.id },
+            data: { loyaltyPoints: { increment: pointsTransfer } },
+          });
+        }
+        await tx.loyaltyTransaction.updateMany({
+          where: { orderId: id },
+          data: { userId: user.id },
+        });
+      }
+
+      await tx.orderItem.deleteMany({ where: { orderId: id } });
+      return tx.order.update({
+        where: { id },
+        data: {
+          userId: user.id,
+          shippingAddress: { ...data.shippingAddress },
+          notes: data.notes,
+          subtotal,
+          shippingCost,
+          total: Math.max(0, subtotal - Number(existing.discount) - Number(existing.loyaltyDiscount)) + shippingCost,
+          items: { create: items },
+        },
+        include: {
+          items: true,
+          user: { select: { name: true, email: true, phone: true } },
+        },
+      });
+    });
+
+    await this.stats.invalidate();
+    return order;
+  }
+
+  private async resolveAdminOrderItems(
+    tx: Prisma.TransactionClient,
+    requestedItems: AdminOrderDto['items'],
+    existingItems: Array<{
+      id: string;
+      variantId: string | null;
+      quantity: number;
+      productId: string;
+      name: string;
+      variantName: string | null;
+      price: Prisma.Decimal;
+      image: string | null;
+    }> = [],
+  ): Promise<ResolvedAdminOrderItem[]> {
+    const quantities = new Map<string, number>();
+    const legacyItems = new Map(
+      existingItems.map((item) => [item.id, item]),
+    );
+    for (const item of requestedItems) {
+      if ((!item.variantId && !item.itemId) || !Number.isInteger(item.quantity) || item.quantity < 1) {
+        throw new BadRequestException('Each order item must have a variant and a positive quantity');
+      }
+      if (item.itemId && !item.variantId) {
+        const legacyItem = legacyItems.get(item.itemId);
+        if (!legacyItem || legacyItem.variantId) {
+          throw new BadRequestException('The selected order item is no longer available');
+        }
+        continue;
+      }
+      quantities.set(item.variantId!, (quantities.get(item.variantId!) || 0) + item.quantity);
+    }
+
+    const variants = await tx.variant.findMany({
+      where: { id: { in: [...quantities.keys()] } },
+      include: {
+        product: {
+          select: { id: true, name: true, images: true, isActive: true, deletedAt: true },
+        },
+      },
+    });
+    if (variants.length !== quantities.size) {
+      throw new BadRequestException('One or more selected variants no longer exist');
+    }
+
+    const oldQuantities = this.sumOrderItemQuantities(existingItems);
+    const oldItemsByVariant = new Map(
+      existingItems.filter((item) => item.variantId).map((item) => [item.variantId!, item]),
+    );
+    const resolvedItems = variants.map((variant) => {
+      const quantity = quantities.get(variant.id)!;
+      const unchanged = oldQuantities.get(variant.id) === quantity;
+      if ((!variant.product.isActive || variant.product.deletedAt) && !unchanged) {
+        throw new BadRequestException('Selected products must be active to add or change their quantity');
+      }
+      const existingItem = unchanged ? oldItemsByVariant.get(variant.id) : undefined;
+      return {
+        productId: existingItem?.productId || variant.productId,
+        variantId: variant.id,
+        name: existingItem?.name || variant.product.name,
+        variantName: existingItem?.variantName || `${variant.name}: ${variant.value}`,
+        price: existingItem ? Number(existingItem.price) : Number(variant.price),
+        quantity,
+        image: existingItem?.image || variant.product.images[0],
+      };
+    });
+
+    for (const item of requestedItems) {
+      if (!item.itemId || item.variantId) continue;
+      const legacyItem = legacyItems.get(item.itemId);
+      if (!legacyItem) continue;
+      resolvedItems.push({
+        productId: legacyItem.productId,
+        variantId: legacyItem.variantId || '',
+        name: legacyItem.name,
+        variantName: legacyItem.variantName || '',
+        price: Number(legacyItem.price),
+        quantity: item.quantity,
+        image: legacyItem.image || undefined,
+      });
+    }
+
+    return resolvedItems;
+  }
+
+  private sumOrderItemQuantities(
+    items: Array<{ variantId?: string | null; quantity: number }>,
+  ) {
+    const quantities = new Map<string, number>();
+    for (const item of items) {
+      if (item.variantId) {
+        quantities.set(item.variantId, (quantities.get(item.variantId) || 0) + item.quantity);
+      }
+    }
+    return quantities;
+  }
+
+  private async claimAdminOrderStock(
+    tx: Prisma.TransactionClient,
+    items: ResolvedAdminOrderItem[],
+  ) {
+    for (const item of items) {
+      const claim = await tx.variant.updateMany({
+        where: {
+          id: item.variantId,
+          price: item.price,
+          stock: { gte: item.quantity },
+          product: { is: { isActive: true, deletedAt: null } },
+        },
+        data: { stock: { decrement: item.quantity } },
+      });
+      if (claim.count !== 1) {
+        throw new BadRequestException('A selected item is unavailable or does not have enough stock');
+      }
+    }
+  }
+
+  private async applyAdminOrderStockDelta(
+    tx: Prisma.TransactionClient,
+    previous: Map<string, number>,
+    next: Map<string, number>,
+  ) {
+    const variantIds = new Set([...previous.keys(), ...next.keys()]);
+    for (const variantId of variantIds) {
+      const delta = (next.get(variantId) || 0) - (previous.get(variantId) || 0);
+      if (delta > 0) {
+        const variant = await tx.variant.findUnique({ where: { id: variantId }, select: { price: true } });
+        if (!variant) throw new BadRequestException('An order variant no longer exists');
+        const claim = await tx.variant.updateMany({
+          where: {
+            id: variantId,
+            price: variant.price,
+            stock: { gte: delta },
+            product: { is: { isActive: true, deletedAt: null } },
+          },
+          data: { stock: { decrement: delta } },
+        });
+        if (claim.count !== 1) {
+          throw new BadRequestException('Not enough stock to increase this order quantity');
+        }
+      } else if (delta < 0) {
+        const released = await tx.variant.updateMany({
+          where: { id: variantId },
+          data: { stock: { increment: -delta } },
+        });
+        if (released.count !== 1) {
+          throw new BadRequestException('Unable to release stock for a removed order item');
+        }
+      }
+    }
   }
 
   async updateStatus(id: string, status: OrderStatus, trackingNumber?: string) {

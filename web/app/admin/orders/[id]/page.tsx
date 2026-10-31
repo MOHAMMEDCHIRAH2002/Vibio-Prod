@@ -1,14 +1,14 @@
 'use client';
 
-import Image from '@/components/common/OptimizedImage';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Save } from 'lucide-react';
 import { ordersApi } from '@/lib/api';
-import { formatDate, formatPrice, getOrderStatusColor } from '@/lib/utils';
+import { formatDate, getOrderStatusColor } from '@/lib/utils';
 import { toast } from 'sonner';
+import OrderEditor from '@/components/admin/OrderEditor';
 
 const ORDER_STATUSES = [
   'PENDING',
@@ -22,6 +22,7 @@ const ORDER_STATUSES = [
 
 export default function AdminOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const qc = useQueryClient();
 
   const { data: order, isLoading } = useQuery({
@@ -50,8 +51,27 @@ export default function AdminOrderDetailPage() {
         qc.invalidateQueries({ queryKey: ['stats'], refetchType: 'all' }),
       ]);
       toast.success('Order updated');
+      router.push('/admin/orders');
     },
     onError: () => toast.error('Failed to update order'),
+  });
+
+  const editOrderMutation = useMutation({
+    mutationFn: (data: Parameters<typeof ordersApi.adminUpdate>[1]) => ordersApi.adminUpdate(id, data),
+    onSuccess: async () => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['admin-order', id], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['admin-orders'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['orders'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['order', id], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['customer-orders'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['admin-stock'], refetchType: 'all' }),
+        qc.invalidateQueries({ queryKey: ['stats'], refetchType: 'all' }),
+      ]);
+      toast.success('Order details updated');
+      router.push('/admin/orders');
+    },
+    onError: () => toast.error('Unable to update order. Check item availability and stock.'),
   });
 
   if (isLoading) {
@@ -90,54 +110,19 @@ export default function AdminOrderDetailPage() {
 
       <section className="grid gap-5 xl:grid-cols-[1.45fr_0.85fr]">
         <div className="space-y-5">
-          <div className="admin-panel p-5 sm:p-6">
-            <p className="admin-eyebrow">Order items</p>
-            <h2 className="mt-3 font-heading text-[1.9rem] leading-none tracking-[-0.05em] text-[#171C14]">
-              Product summary
-            </h2>
-
-            <div className="mt-6 space-y-4">
-              {currentOrder.items?.map((item: any) => (
-                <div key={item.id} className="flex gap-4 rounded-[1.35rem] border border-[#EFE8DE] bg-white/55 p-4">
-                  <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-[1rem] bg-[#F1ECE4]">
-                    {item.image && <Image src={item.image} alt={item.name} fill className="object-cover" />}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#171C14]">{item.name}</p>
-                    <p className="mt-1 text-xs text-[#7A776F]">
-                      {item.variantName} - x{item.quantity}
-                    </p>
-                  </div>
-                  <p className="text-sm font-semibold text-[#171C14]">
-                    {formatPrice(item.price * item.quantity)}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 space-y-3 border-t border-[#EEE6DB] pt-5 text-sm">
-              <div className="flex justify-between text-[#6B6A63]">
-                <span>Subtotal</span>
-                <span>{formatPrice(currentOrder.subtotal)}</span>
-              </div>
-              {currentOrder.discount > 0 && (
-                <div className="flex justify-between text-[#2A6A45]">
-                  <span>Discount</span>
-                  <span>-{formatPrice(currentOrder.discount)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-[#6B6A63]">
-                <span>Shipping</span>
-                <span>
-                  {currentOrder.shippingCost === 0 ? 'Free' : formatPrice(currentOrder.shippingCost)}
-                </span>
-              </div>
-              <div className="flex justify-between border-t border-[#EEE6DB] pt-3 font-semibold text-[#171C14]">
-                <span>Total</span>
-                <span>{formatPrice(currentOrder.total)}</span>
-              </div>
-            </div>
-          </div>
+          <OrderEditor
+            initial={{
+              userId: currentOrder.userId,
+              customerLabel: `${currentOrder.user?.name || 'Customer'} — ${currentOrder.user?.email || ''}`,
+              items: currentOrder.items || [],
+              shippingAddress: currentOrder.shippingAddress,
+              notes: currentOrder.notes,
+              discount: Number(currentOrder.discount),
+              loyaltyDiscount: Number(currentOrder.loyaltyDiscount),
+            }}
+            saving={editOrderMutation.isPending}
+            onSubmit={(data) => editOrderMutation.mutate(data)}
+          />
 
           <div className="admin-panel p-5 sm:p-6">
             <p className="admin-eyebrow">Status management</p>

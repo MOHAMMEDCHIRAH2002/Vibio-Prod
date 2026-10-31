@@ -252,6 +252,9 @@ export const ordersApi = {
   adminList: (params?: any) =>
     request<PaginatedResponse<Order>>({ method: 'GET', url: '/admin/orders', params }),
   adminById: (id: string) => request<Order>({ method: 'GET', url: `/admin/orders/${id}` }),
+  adminCreate: (data: any) => request<Order>({ method: 'POST', url: '/admin/orders', data }),
+  adminUpdate: (id: string, data: any) =>
+    request<Order>({ method: 'PATCH', url: `/admin/orders/${id}`, data }),
   updateStatus: (id: string, data: any) =>
     request<Order>({ method: 'PATCH', url: `/admin/orders/${id}/status`, data }),
   listByCustomer: (customerId: string) =>
@@ -259,6 +262,15 @@ export const ordersApi = {
       method: 'GET',
       url: `/admin/orders`,
       params: { customerId },
+    }),
+};
+
+export const customersApi = {
+  adminList: (params?: { page?: number; limit?: number; search?: string }) =>
+    request<{ users: User[]; total: number; page: number; pages: number }>({
+      method: 'GET',
+      url: '/admin/customers',
+      params,
     }),
 };
 

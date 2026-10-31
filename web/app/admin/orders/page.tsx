@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { Eye, Search, X } from 'lucide-react';
+import { Eye, Plus, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ordersApi } from '@/lib/api';
 import { formatDate, formatPrice, getOrderStatusColor } from '@/lib/utils';
@@ -55,7 +55,13 @@ export default function AdminOrdersPage() {
               {t('admin.ordersPage.subcopy')}
             </p>
           </div>
-          <div className="admin-chip">{t('admin.ordersPage.totalOrders', { count: total })}</div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="admin-chip">{t('admin.ordersPage.totalOrders', { count: total })}</div>
+            <Link href="/admin/orders/new" className="admin-btn-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#315824]">
+              <Plus className="h-4 w-4" />
+              Create order
+            </Link>
+          </div>
         </div>
 
         <div className="mt-6 relative">
