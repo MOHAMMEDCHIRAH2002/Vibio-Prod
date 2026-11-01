@@ -106,7 +106,9 @@ model Category {
   id          String     @id @default(cuid())
   slug        String     @unique
   name        String
+  name_ar     String?
   description String?
+  description_ar String?
   image       String?
   parentId    String?
   parent      Category?  @relation("SubCategories", fields: [parentId], references: [id])
@@ -130,11 +132,16 @@ model CategorySlugAlias {
 }
 
 model Product {
+  // Nullable Arabic values are generated into the Prisma client and fall back
+  // to the French fields at the API/frontend localization boundary.
   id           String                   @id @default(cuid())
   slug         String                   @unique
   name         String
-  description  String                   @db.Text
+  name_ar      String?
+  description  String         @db.Text
+  description_ar String?      @db.Text
   shortDesc    String?
+  shortDesc_ar String?
   images       String[]
   categoryId   String?
   category     Category?                @relation(fields: [categoryId], references: [id], onDelete: SetNull)
@@ -146,7 +153,9 @@ model Product {
   isActive     Boolean                  @default(true)
   deletedAt    DateTime?
   metaTitle    String?
+  metaTitle_ar String?
   metaDesc     String?
+  metaDesc_ar  String?
   weight       Float?
   searchVector Unsupported("tsvector")?
   reviews      Review[]
@@ -165,11 +174,14 @@ model Product {
 }
 
 model Variant {
+  // Variant labels are localized independently from the product name.
   id         String      @id @default(cuid())
   productId  String
   product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   name       String
+  name_ar    String?
   value      String
+  value_ar   String?
   price      Decimal     @db.Decimal(10, 2)
   stock      Int         @default(0)
   sku        String?     @unique
@@ -182,6 +194,7 @@ model Variant {
 model Tag {
   id       String     @id @default(cuid())
   name     String     @unique
+  name_ar  String?
   slug     String     @unique
   products Product[]
   posts    BlogPost[]
@@ -239,7 +252,9 @@ model OrderItem {
   variantId   String?
   variant     Variant? @relation(fields: [variantId], references: [id])
   name        String
+  name_ar     String?
   variantName String?
+  variantName_ar String?
   price       Decimal  @db.Decimal(10, 2)
   quantity    Int
   image       String?
@@ -296,8 +311,11 @@ model Review {
   user         User     @relation(fields: [userId], references: [id])
   rating       Int
   title        String?
+  title_ar     String?
   body         String?  @db.Text
+  body_ar      String?  @db.Text
   reviewerName String?
+  reviewerName_ar String?
   isApproved   Boolean  @default(false)
   createdAt    DateTime @default(now())
 
@@ -310,10 +328,13 @@ model Review {
 model Banner {
   id           String    @id @default(cuid())
   title        String
+  title_ar     String?
   subtitle     String?
+  subtitle_ar  String?
   imageDesktop String
   imageMobile  String?
   ctaText      String?
+  ctaText_ar   String?
   ctaLink      String?
   sortOrder    Int       @default(0)
   isActive     Boolean   @default(true)
@@ -334,13 +355,18 @@ model BlogPost {
   id          String     @id @default(cuid())
   slug        String     @unique
   title       String
+  title_ar    String?
   excerpt     String?
+  excerpt_ar  String?
   content     String     @db.Text
+  content_ar  String?    @db.Text
   coverImage  String?
   authorId    String
   status      BlogStatus @default(DRAFT)
   metaTitle   String?
+  metaTitle_ar String?
   metaDesc    String?
+  metaDesc_ar String?
   tags        Tag[]
   scheduledAt DateTime? // when a SCHEDULED post should go public
   publishedAt DateTime? // when the post actually went public
