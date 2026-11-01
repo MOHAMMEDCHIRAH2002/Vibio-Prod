@@ -420,7 +420,7 @@ export const statsApi = {
 
 // Account
 export const accountApi = {
-  getProfile: () => request<User>({ method: 'GET', url: '/auth/me' }),
+  getProfile: () => request<User>({ method: 'GET', url: '/account/profile' }),
   updateProfile: (data: any) => request<User>({ method: 'PATCH', url: '/account/profile', data }),
   changePassword: (data: any) =>
     request<void>({ method: 'PATCH', url: '/account/password', data }),

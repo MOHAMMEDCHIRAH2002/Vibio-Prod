@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { redirect } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,7 +13,6 @@ import { accountApi } from '@/lib/api';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name is too short'),
-  email: z.string().email('Invalid email'),
   phone: z.string().optional(),
 });
 
@@ -35,6 +34,13 @@ export default function SettingsPage() {
   const { data: session, status, update } = useSession();
   if (status === 'unauthenticated') redirect('/login');
 
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['account-profile'],
+    queryFn: accountApi.getProfile,
+    enabled: status === 'authenticated',
+    staleTime: 0,
+  });
+
   const [notifications, setNotifications] = useState({
     orderUpdates: true,
     promotions: false,
@@ -45,15 +51,23 @@ export default function SettingsPage() {
   const {
     register: regProfile,
     handleSubmit: handleProfile,
+    reset: resetProfile,
     formState: { errors: profileErrors },
   } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: session?.user?.name || '',
-      email: session?.user?.email || '',
       phone: '',
     },
   });
+
+  useEffect(() => {
+    if (!profile) return;
+    resetProfile({
+      name: profile.name || '',
+      phone: profile.phone || '',
+    });
+  }, [profile, resetProfile]);
 
   const {
     register: regPassword,
@@ -64,20 +78,33 @@ export default function SettingsPage() {
 
   const profileMutation = useMutation({
     mutationFn: (data: ProfileForm) => accountApi.updateProfile(data),
-    onSuccess: async (_, data) => {
-      await update({ name: data.name });
+    onSuccess: async (updatedProfile) => {
+      resetProfile({
+        name: updatedProfile.name || '',
+        phone: updatedProfile.phone || '',
+      });
+      await update({
+        name: updatedProfile.name,
+        phone: updatedProfile.phone,
+      });
       toast.success('Profile updated');
     },
     onError: () => toast.error('Failed to update profile'),
   });
 
   const passwordMutation = useMutation({
-    mutationFn: (data: PasswordForm) => accountApi.changePassword(data),
+    mutationFn: ({ currentPassword, newPassword }: PasswordForm) =>
+      accountApi.changePassword({ currentPassword, newPassword }),
     onSuccess: () => {
       resetPassword();
       toast.success('Password changed');
     },
-    onError: () => toast.error('Current password is incorrect'),
+    onError: (error: any) => {
+      const message = Array.isArray(error?.message)
+        ? error.message.join(', ')
+        : error?.message || 'Unable to change password';
+      toast.error(message);
+    },
   });
 
   const fieldClass = 'field-luxury';
@@ -118,8 +145,8 @@ export default function SettingsPage() {
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
                     Email
                   </label>
-                  <input {...regProfile('email')} type="email" className={fieldClass} />
-                  {profileErrors.email && <p className="mt-2 text-xs text-[#C9571A]">{profileErrors.email.message}</p>}
+                  <input value={session?.user?.email || profile?.email || ''} type="email" readOnly className={`${fieldClass} cursor-not-allowed opacity-70`} />
+                  <p className="mt-2 text-xs text-[#78805F]">Email cannot be changed here.</p>
                 </div>
               </div>
 
@@ -130,7 +157,7 @@ export default function SettingsPage() {
                 <input {...regProfile('phone')} type="tel" placeholder="+212 6 00 00 00 00" className={fieldClass} />
               </div>
 
-              <button type="submit" disabled={profileMutation.isPending} className="btn-gold disabled:opacity-50">
+              <button type="submit" disabled={profileLoading || profileMutation.isPending} className="btn-gold disabled:opacity-50">
                 {profileMutation.isPending ? 'Saving...' : 'Save changes'}
               </button>
             </form>
@@ -184,7 +211,7 @@ export default function SettingsPage() {
             </form>
           </div>
 
-          <div className="surface-panel p-6">
+          {/* <div className="surface-panel p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#EFF5E7] text-[#273E1C]">
                 <Bell className="h-4 w-4" />
@@ -225,7 +252,7 @@ export default function SettingsPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div className="rounded-[28px] border border-[#E9D6CC] bg-[#FCE9E2] p-6">
             <div className="flex items-center gap-3">

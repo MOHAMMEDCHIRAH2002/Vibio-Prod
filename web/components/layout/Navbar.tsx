@@ -32,7 +32,7 @@ import { categoriesApi } from '@/lib/api';
 
 const staticNavLinks = [
   { href: '/shop', key: 'nav.shop' },
-  { href: '/gifts', key: 'nav.giftBoxes' },
+  // { href: '/gifts', key: 'nav.giftBoxes' },
   { href: '/blog', key: 'nav.journal' },
   { href: '/about', key: 'nav.about' },
   { href: '/contact', key: 'nav.contact' },

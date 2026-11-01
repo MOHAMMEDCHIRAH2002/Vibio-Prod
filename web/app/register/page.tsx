@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { toast } from 'sonner';
+import BrandLogo from '@/components/common/BrandLogo';
 
 const schema = z.object({
   name: z.string().min(2, 'Name too short'),
@@ -51,8 +52,12 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-primary-bg flex items-center justify-center px-4 py-20">
       <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <Link href="/" className="font-heading text-3xl text-accent-gold tracking-widest">VIBIO</Link>
+        <div className="mb-10 text-center">
+          <div className="mb-6 flex justify-center">
+            <Link href="/" className="surface-shell flex items-center px-5 py-4">
+              <BrandLogo className="h-10 w-36" sizes="144px" priority />
+            </Link>
+          </div>
           <h1 className="font-heading text-2xl text-text-dark mt-6 mb-2">Create Account</h1>
           <p className="text-text-muted text-sm">Join the Vibio luxury circle</p>
         </div>

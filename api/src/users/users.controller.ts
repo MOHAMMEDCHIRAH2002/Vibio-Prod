@@ -14,6 +14,8 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -41,9 +43,24 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   updateProfile(
     @CurrentUser('id') userId: string,
-    @Body() data: { name?: string; phone?: string; image?: string },
+    @Body() data: UpdateProfileDto,
   ) {
     return this.users.updateProfile(userId, data);
+  }
+
+  @Patch('account/password')
+  @UseGuards(JwtAuthGuard)
+  changePassword(
+    @CurrentUser('id') userId: string,
+    @Body() data: ChangePasswordDto,
+  ) {
+    return this.users.changePassword(userId, data);
+  }
+
+  @Get('account/profile')
+  @UseGuards(JwtAuthGuard)
+  getProfile(@CurrentUser('id') userId: string) {
+    return this.users.getProfile(userId);
   }
 
   @Get('account/addresses')

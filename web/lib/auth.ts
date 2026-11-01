@@ -97,7 +97,13 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account, profile, trigger, session }) {
+      if (trigger === 'update' && session?.user) {
+        token.name = session.user.name ?? token.name;
+        token.email = session.user.email ?? token.email;
+        token.phone = (session.user as any).phone ?? token.phone;
+      }
+
       if (account?.provider === 'google' && profile?.email) {
         try {
           const res = await axios.post(`${API_URL}/api/auth/google/exchange`, {
@@ -146,6 +152,9 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
+      session.user.name = token.name as string | undefined;
+      session.user.email = token.email as string | undefined;
+      (session.user as any).phone = token.phone as string | undefined;
       session.user.id = token.id as string;
       session.user.role = token.role as string;
       if (token.accessToken) {
@@ -184,6 +193,7 @@ declare module 'next-auth' {
       email?: string | null;
       image?: string | null;
       role: string;
+      phone?: string | null;
     };
   }
 }
@@ -196,5 +206,6 @@ declare module 'next-auth/jwt' {
     refreshToken?: string;
     accessTokenExpires?: number;
     error?: 'RefreshAccessTokenError' | 'NoAccessToken';
+    phone?: string | null;
   }
 }

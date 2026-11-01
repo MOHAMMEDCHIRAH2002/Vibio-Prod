@@ -20,13 +20,13 @@ const navItems = [
     icon: Gift,
     match: (pathname: string) => pathname.startsWith('/account/loyalty'),
   },
-  { href: '/wishlist', label: 'Wishlist', icon: Heart, match: (pathname: string) => pathname === '/wishlist' },
-  {
-    href: '/account/addresses',
-    label: 'Addresses',
-    icon: MapPin,
-    match: (pathname: string) => pathname.startsWith('/account/addresses'),
-  },
+  // { href: '/wishlist', label: 'Wishlist', icon: Heart, match: (pathname: string) => pathname === '/wishlist' },
+  // {
+  //   href: '/account/addresses',
+  //   label: 'Addresses',
+  //   icon: MapPin,
+  //   match: (pathname: string) => pathname.startsWith('/account/addresses'),
+  // },
   {
     href: '/account/settings',
     label: 'Settings',
