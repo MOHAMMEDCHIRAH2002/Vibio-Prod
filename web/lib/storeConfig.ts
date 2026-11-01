@@ -41,24 +41,23 @@ const phone = env('NEXT_PUBLIC_STORE_PHONE_NUMBER', '+212 708-073308');
 const whatsapp = env('NEXT_PUBLIC_STORE_WHATSAPP_NUMBER', phone);
 const address = env(
   'NEXT_PUBLIC_STORE_ADDRESS',
-  '12 Boulevard d’Anfa, Casablanca 20250, Maroc',
+  'boutique H1, Résidence Joyau du parc groupe 2, Mohammédia, Maroc',
 );
 
-// Photos: comma-separated URLs via env, else on-brand placeholders.
+// Photos: comma-separated URLs via env, else use the real boutique imagery.
 const photoEnv = env('NEXT_PUBLIC_STORE_PHOTOS');
 const photoUrls = photoEnv
   ? photoEnv.split(',').map((s) => s.trim()).filter(Boolean)
   : [
-      'https://placehold.co/1200x900/273E1C/FBF7EE/png?text=Vibio+Boutique',
-      'https://placehold.co/800x600/3D8B45/FBF7EE/png?text=Th%C3%A9+%26+Caf%C3%A9',
-      'https://placehold.co/800x600/B9894B/FBF7EE/png?text=Dattes+%26+Chocolat',
-      'https://placehold.co/800x600/1E2519/D8B36A/png?text=Espace+Cadeaux',
+      '/about/interieur.jpg',
+      '/about/productssim.jpg',
+      '/about/external.jpg',
     ];
 
 export const storeConfig: StoreConfig = {
   name: env('NEXT_PUBLIC_STORE_NAME', 'Vibio'),
   addressLines: address.split(',').map((s) => s.trim()).filter(Boolean),
-  city: env('NEXT_PUBLIC_STORE_CITY', 'Casablanca'),
+  city: env('NEXT_PUBLIC_STORE_CITY', 'Mohammédia'),
   country: env('NEXT_PUBLIC_STORE_COUNTRY', 'Maroc'),
   phone,
   whatsapp,
@@ -70,7 +69,7 @@ export const storeConfig: StoreConfig = {
   ),
   mapLinkUrl: env(
     'NEXT_PUBLIC_STORE_MAP_LINK',
-    'https://share.google/uPk4izGvgzIUmQuX3',
+    'https://maps.app.goo.gl/STMRMpCMYqcCQU6c8',
   ),
   photos: photoUrls.map((src, i) => ({ src, alt: `Vibio store ${i + 1}` })),
   hours: [
