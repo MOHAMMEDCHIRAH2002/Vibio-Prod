@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Image from '@/components/common/OptimizedImage';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { categoriesApi } from '@/lib/api';
+import { categoriesApi, productsApi } from '@/lib/api';
 import { ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────
@@ -92,6 +92,11 @@ export default function HeroSection() {
     refetchOnWindowFocus: true,
     refetchInterval: 60_000,
   });
+  const { data: productsData } = useQuery({
+    queryKey: ['hero-products'],
+    queryFn: () => productsApi.list({ page: 1, limit: 100 }),
+    staleTime: 60_000,
+  });
   const [slideIndex, setSlideIndex] = useState(0);
   const [activeCat, setActiveCat] = useState('');
 
@@ -116,7 +121,30 @@ export default function HeroSection() {
     href: '/shop',
   };
 
-  const product = carouselProducts[slideIndex];
+  const dynamicCarouselProducts = useMemo(() => {
+    const products = productsData?.products || [];
+    const usedCategoryIds = new Set<string>();
+
+    return products
+      .filter((item: any) => item.images?.[0])
+      .filter((item: any) => {
+        if (!item.categoryId || usedCategoryIds.has(item.categoryId)) return false;
+        usedCategoryIds.add(item.categoryId);
+        return true;
+      })
+      .slice(0, 3)
+      .map((item: any, index: number) => ({
+        id: item.id,
+        tags: index === 0 ? ['Sale', 'Best'] : index === 1 ? ['New'] : ['Top'],
+        name: item.name,
+        subtitle: item.description?.split(/[.!?]/)[0]?.trim() || 'Premium Vibio selection',
+        price: `${Number(item.basePrice || item.variants?.[0]?.price || 0).toFixed(2)} MAD`,
+        oldPrice: item.comparePrice ? `${Number(item.comparePrice).toFixed(2)} MAD` : null,
+        image: item.images[0],
+      }));
+  }, [productsData]);
+  const carouselItems = dynamicCarouselProducts.length ? dynamicCarouselProducts : carouselProducts;
+  const product = carouselItems[slideIndex % carouselItems.length];
   const category =
     categoryData.find((item) => item.id === activeCat) ??
     categoryData[0] ??
@@ -129,9 +157,9 @@ export default function HeroSection() {
   }, [activeCat, categoryData]);
 
   const prev = () =>
-    setSlideIndex((i) => (i - 1 + carouselProducts.length) % carouselProducts.length);
+    setSlideIndex((i) => (i - 1 + carouselItems.length) % carouselItems.length);
   const next = () =>
-    setSlideIndex((i) => (i + 1) % carouselProducts.length);
+    setSlideIndex((i) => (i + 1) % carouselItems.length);
 
   return (
     <section
