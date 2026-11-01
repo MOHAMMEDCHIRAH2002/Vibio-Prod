@@ -69,7 +69,7 @@ export const storeConfig: StoreConfig = {
   ),
   mapLinkUrl: env(
     'NEXT_PUBLIC_STORE_MAP_LINK',
-    'https://maps.app.goo.gl/tiqMJDMDgcHqiazB7',
+    'https://www.google.com/maps/place/Vibio/@33.7073813,-7.4333853,14z/data=!4m10!1m2!2m1!1sboutique+H1,+R%C3%A9sidence+Joyau+du+parc+groupe+2,+Mohamm%C3%A9dia,+Maroc!3m6!1s0xda7b78553afd5a9:0x6d33ed31e046236!8m2!3d33.7073813!4d-7.3973364!15sCkJib3V0aXF1ZSBIMSwgUsOpc2lkZW5jZSBKb3lhdSBkdSBwYXJjIGdyb3VwZSAyLCBNb2hhbW3DqWRpYSwgTWFyb2OSAQ1vcmdhbmljX3N0b3Jl4AEA!16s%2Fg%2F11zy2bc490?hl=fr-FR&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D',
   ),
   photos: photoUrls.map((src, i) => ({ src, alt: `Vibio store ${i + 1}` })),
   hours: [
