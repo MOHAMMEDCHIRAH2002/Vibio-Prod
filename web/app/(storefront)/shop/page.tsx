@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -20,19 +21,19 @@ import { categoriesApi, productsApi } from '@/lib/api';
 import ProductGrid from '@/components/shop/ProductGrid';
 import FilterSidebar from '@/components/shop/FilterSidebar';
 
-const sortOptions = [
-  { value: 'newest', label: 'Newest arrivals' },
-  { value: 'price-asc', label: 'Price: low to high' },
-  { value: 'price-desc', label: 'Price: high to low' },
-  { value: 'name', label: 'Name A-Z' },
-];
-
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
   visible: { opacity: 1, y: 0 },
 };
 
 export default function ShopPage() {
+  const { t } = useTranslation();
+  const sortOptions = [
+    { value: 'newest', label: t('shop.sortNewest') },
+    { value: 'price-asc', label: t('shop.sortPriceAsc') },
+    { value: 'price-desc', label: t('shop.sortPriceDesc') },
+    { value: 'name', label: t('shop.sortName') },
+  ];
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -114,12 +115,12 @@ export default function ShopPage() {
     },
     minPrice && {
       key: 'minPrice',
-      label: `From ${minPrice} MAD`,
+      label: t('shop.from', { price: minPrice }),
       value: String(minPrice),
     },
     maxPrice && {
       key: 'maxPrice',
-      label: `To ${maxPrice} MAD`,
+      label: t('shop.to', { price: maxPrice }),
       value: String(maxPrice),
     },
   ].filter(Boolean) as { key: string; label: string; value: string }[];
@@ -146,22 +147,20 @@ export default function ShopPage() {
               <div>
                 <div className="lux-pill w-fit px-4 py-2">
                   <Sparkles className="h-3.5 w-3.5" />
-                  Curated storefront
+                  {t('shop.curatedStorefront')}
                 </div>
 
                 <h1 className="mt-7 max-w-[10.5ch] font-heading text-[clamp(3.5rem,6.9vw,6.8rem)] leading-[0.86] tracking-[-0.075em] text-[#1E2519]">
-                  Discover the full Vibio collection.
+                  {t('shop.discoverCollection')}
                 </h1>
 
                 <p className="mt-6 max-w-2xl text-[15px] leading-8 text-[#5B6455] sm:text-[16px]">
-                  Browse tea, coffee, gourmet chocolates, natural care, gifting edits,
-                  and artisanal tabletop pieces through a calm, curated luxury retail
-                  experience.
+                  {t('shop.browseDescription')}
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <button onClick={() => setFilterOpen(true)} className="btn-gold">
-                    Explore filters
+                    {t('shop.exploreFilters')}
                     <SlidersHorizontal className="h-4 w-4" />
                   </button>
 
@@ -169,7 +168,7 @@ export default function ShopPage() {
                     onClick={() => setParams({ sort: 'newest' })}
                     className="btn-outline-gold"
                   >
-                    New arrivals
+                    {t('shop.newArrivals')}
                     <ArrowUpRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -179,17 +178,17 @@ export default function ShopPage() {
                 {[
                   {
                     value: total ? `${total}+` : '12+',
-                    label: 'Pieces available',
+                    label: t('shop.piecesAvailable'),
                     icon: PackageCheck,
                   },
                   {
                     value: `${categories.length || 6}`,
-                    label: 'Collection worlds',
+                    label: t('shop.collectionWorlds'),
                     icon: Sparkles,
                   },
                   {
                     value: '24-48h',
-                    label: 'Usual dispatch',
+                    label: t('shop.usualDispatch'),
                     icon: Truck,
                   },
                 ].map((stat, index) => {
@@ -239,17 +238,16 @@ export default function ShopPage() {
             <div className="relative flex flex-col gap-6 border-b border-[#ECE6D9] pb-6 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-2xl">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9A7B42]">
-                  Current view
+                  {t('shop.currentView')}
                 </p>
 
                 <h2 className="mt-2 font-heading text-[clamp(2.3rem,4vw,4.3rem)] leading-[0.9] tracking-[-0.065em] text-[#1E2519]">
-                  {selectedCategoryName || 'All curated pieces'}
+                  {selectedCategoryName || t('shop.allProducts')}
                 </h2>
 
                 <p className="mt-4 max-w-xl text-sm leading-7 text-[#5B6455]">
-                  {total > 0 ? `${total} products available` : 'No products yet'}
-                  {search ? ` matching ${search}` : ''}. Selected for natural rituals,
-                  elevated gifting, and a refined everyday table.
+                  {total > 0 ? t('shop.productsCount', { count: total }) : t('shop.noProducts')}
+                  {search ? ` ${t('shop.for', { search })}` : ''}. {t('shop.browseDescription')}
                 </p>
               </div>
 
@@ -259,7 +257,7 @@ export default function ShopPage() {
                     <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#78805F]" />
                     <input
                       defaultValue={search || ''}
-                      placeholder="Search rituals..."
+                      placeholder={t('search.placeholder')}
                       onKeyDown={(event) => {
                         if (event.key === 'Enter') {
                           const value = (event.target as HTMLInputElement).value.trim();
@@ -289,7 +287,7 @@ export default function ShopPage() {
                     className="btn-outline-gold"
                   >
                     <SlidersHorizontal className="h-4 w-4" />
-                    Filters
+                    {t('shop.filters')}
                     {activeFilters.length > 0 && (
                       <span className="rounded-full bg-[#273E1C] px-2 py-0.5 text-[10px] font-bold text-white">
                         {activeFilters.length}
@@ -305,7 +303,7 @@ export default function ShopPage() {
                           ? 'bg-[#273E1C] text-white shadow-[0_12px_30px_rgba(39,62,28,0.18)]'
                           : 'text-[#68725F] hover:bg-[#EFF5E7] hover:text-[#1E2519]'
                       }`}
-                      aria-label="Four column grid"
+                      aria-label={t('shop.fourCols')}
                     >
                       <Grid3X3 className="h-4 w-4" />
                     </button>
@@ -317,7 +315,7 @@ export default function ShopPage() {
                           ? 'bg-[#273E1C] text-white shadow-[0_12px_30px_rgba(39,62,28,0.18)]'
                           : 'text-[#68725F] hover:bg-[#EFF5E7] hover:text-[#1E2519]'
                       }`}
-                      aria-label="Three column grid"
+                      aria-label={t('shop.threeCols')}
                     >
                       <LayoutList className="h-4 w-4" />
                     </button>
@@ -337,7 +335,7 @@ export default function ShopPage() {
                       : 'bg-white/80 text-[#273E1C] ring-1 ring-[#E5D8BE] hover:bg-[#EFF5E7]'
                   }`}
                 >
-                  All
+                  {t('shop.allProducts')}
                 </button>
 
                 {categories.slice(0, 7).map((item: any) => (
@@ -366,7 +364,7 @@ export default function ShopPage() {
                       <button
                         onClick={() => setParams({ [filter.key]: undefined })}
                         className="text-[#7A8162] transition-colors hover:text-[#C9571A]"
-                        aria-label={`Remove ${filter.label}`}
+                        aria-label={t('shop.removeFilter', { label: filter.label })}
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
@@ -377,7 +375,7 @@ export default function ShopPage() {
                     onClick={clearAllFilters}
                     className="rounded-full border border-[#E5D8BE] bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7B6A45] transition-all hover:border-[#C89A4B] hover:text-[#273E1C]"
                   >
-                    Clear all
+                    {t('shop.clearFilters')}
                   </button>
                 </div>
               )}
@@ -402,16 +400,15 @@ export default function ShopPage() {
             {/* Empty luxury hint */}
             {!isLoading && products.length === 0 && (
               <div className="relative my-14 rounded-[32px] border border-[#E5D8BE] bg-[#FBFAF6] px-6 py-12 text-center">
-                <p className="section-eyebrow">No pieces found</p>
+                <p className="section-eyebrow">{t('shop.noProducts')}</p>
                 <h3 className="mt-3 font-heading text-[2.4rem] leading-none tracking-[-0.06em] text-[#1E2519]">
-                  Try a calmer filter combination.
+                  {t('shop.refineBrowse')}
                 </h3>
                 <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[#5B6455]">
-                  Remove one filter or explore all curated pieces from the Vibio ritual
-                  wardrobe.
+                  {t('shop.browseDescription')}
                 </p>
                 <button onClick={clearAllFilters} className="btn-gold mx-auto mt-6">
-                  View all pieces
+                  {t('shop.allProducts')}
                   <ArrowUpRight className="h-4 w-4" />
                 </button>
               </div>

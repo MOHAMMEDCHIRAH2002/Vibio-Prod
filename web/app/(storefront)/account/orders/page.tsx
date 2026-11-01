@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, Package } from 'lucide-react';
 import { ordersApi } from '@/lib/api';
 import { formatDate, formatPrice } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const statusClasses: Record<string, string> = {
   PENDING: 'bg-[#F6E9D8] text-[#A46A1F]',
@@ -20,6 +21,7 @@ const statusClasses: Record<string, string> = {
 
 export default function OrdersPage() {
   const { data: session, status } = useSession();
+  const { t } = useTranslation();
   if (status === 'unauthenticated') redirect('/login');
 
   const { data, isLoading } = useQuery({
@@ -35,9 +37,9 @@ export default function OrdersPage() {
   return (
     <div className="surface-shell p-6 sm:p-7">
       <div className="mb-6 border-b border-[#ECE6D9] pb-5">
-        <p className="section-eyebrow">Orders</p>
+        <p className="section-eyebrow">{t('account.orders')}</p>
         <h2 className="font-heading text-[clamp(2.2rem,4vw,3.4rem)] leading-[0.98] tracking-[-0.05em] text-[#1E2519]">
-          Track every purchase in one place.
+          {t('account.trackPurchases')}
         </h2>
       </div>
 
@@ -53,13 +55,13 @@ export default function OrdersPage() {
             <Package className="h-7 w-7" />
           </div>
           <h3 className="mt-6 font-heading text-[2.2rem] leading-none tracking-[-0.05em] text-[#1E2519]">
-            No orders yet.
+            {t('account.noOrders')}
           </h3>
           <p className="mt-4 text-sm text-[#5B6455]">
-            When you place your first order, it will appear here with full status tracking.
+            {t('account.firstOrder')}
           </p>
           <Link href="/shop" className="btn-gold mt-6">
-            Start shopping
+            {t('account.startShopping')}
           </Link>
         </div>
       ) : (
@@ -81,12 +83,12 @@ export default function OrdersPage() {
                         statusClasses[order.status] || statusClasses.PENDING
                       }`}
                     >
-                      {order.status}
+                      {t(`account.status.${String(order.status).toLowerCase()}`)}
                     </span>
                   </div>
                   <p className="mt-3 text-sm text-[#5B6455]">{formatDate(order.createdAt)}</p>
                   <p className="mt-1 text-sm text-[#5B6455]">
-                    {order.items?.length} item{order.items?.length !== 1 ? 's' : ''}
+                    {t('account.items', { count: order.items?.length || 0 })}
                   </p>
                 </div>
 

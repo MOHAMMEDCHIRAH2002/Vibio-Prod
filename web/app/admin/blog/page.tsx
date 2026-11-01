@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { blogApi } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
+import { localizedText } from '@/lib/i18n/localized';
 
 function slugify(str: string) {
   return str.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -17,15 +18,21 @@ type BlogStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
 
 const emptyForm = {
   title: '',
+  title_ar: '',
   slug: '',
   excerpt: '',
+  excerpt_ar: '',
   content: '',
+  content_ar: '',
   coverImage: '',
   tags: '',
+  tags_ar: '',
   status: 'DRAFT' as BlogStatus,
   scheduledAt: '',
   metaTitle: '',
+  metaTitle_ar: '',
   metaDesc: '',
+  metaDesc_ar: '',
 };
 
 // datetime-local has no timezone; send a full ISO instant in the admin's TZ.
@@ -39,7 +46,7 @@ const STATUS_BADGE: Record<BlogStatus, string> = {
 };
 
 export default function AdminBlogPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -59,13 +66,19 @@ export default function AdminBlogPage() {
 
   const buildPayload = () => ({
     title: form.title,
+    title_ar: form.title_ar || null,
     slug: form.slug,
     excerpt: form.excerpt,
+    excerpt_ar: form.excerpt_ar || null,
     content: form.content,
+    content_ar: form.content_ar || null,
     coverImage: form.coverImage,
     metaTitle: form.metaTitle,
+    metaTitle_ar: form.metaTitle_ar || null,
     metaDesc: form.metaDesc,
+    metaDesc_ar: form.metaDesc_ar || null,
     tags: form.tags ? form.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
+    tags_ar: form.tags_ar ? form.tags_ar.split(',').map((t) => t.trim()).filter(Boolean) : [],
     status: form.status,
     // Only relevant for SCHEDULED; the server clears it otherwise.
     scheduledAt: form.status === 'SCHEDULED' ? toISO(form.scheduledAt) : null,
@@ -117,11 +130,15 @@ export default function AdminBlogPage() {
     setEditId(post.id);
     setForm({
       title: post.title ?? '',
+      title_ar: post.title_ar ?? '',
       slug: post.slug ?? '',
       excerpt: post.excerpt ?? '',
+      excerpt_ar: post.excerpt_ar ?? '',
       content: post.content ?? '',
+      content_ar: post.content_ar ?? '',
       coverImage: post.coverImage ?? '',
       tags: post.tags?.map((t: any) => t.name).join(', ') ?? '',
+      tags_ar: post.tags?.map((t: any) => t.name_ar || '').join(', ') ?? '',
       status: (post.status as BlogStatus) ?? 'DRAFT',
       // datetime-local expects local wall-clock: convert the stored UTC instant.
       scheduledAt: post.scheduledAt
@@ -130,7 +147,9 @@ export default function AdminBlogPage() {
             .slice(0, 16)
         : '',
       metaTitle: post.metaTitle ?? '',
+      metaTitle_ar: post.metaTitle_ar ?? '',
       metaDesc: post.metaDesc ?? '',
+      metaDesc_ar: post.metaDesc_ar ?? '',
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -193,6 +212,10 @@ export default function AdminBlogPage() {
                 />
               </div>
               <div>
+                <label className="mb-2 block text-sm font-medium text-[#3E433E]">{t('admin.blogPage.fieldTitle')} (العربية)</label>
+                <input value={form.title_ar} onChange={(e) => set('title_ar', e.target.value)} dir="rtl" className="admin-input" />
+              </div>
+              <div>
                 <label className="mb-2 block text-sm font-medium text-[#3E433E]">{t('admin.blogPage.fieldSlug')}</label>
                 <input
                   value={form.slug}
@@ -200,6 +223,10 @@ export default function AdminBlogPage() {
                   placeholder={t('admin.blogPage.phSlug')}
                   className="admin-input font-mono text-sm"
                 />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[#3E433E]">{t('admin.blogPage.fieldExcerpt')} (العربية)</label>
+                <textarea value={form.excerpt_ar} onChange={(e) => set('excerpt_ar', e.target.value)} rows={2} dir="rtl" className="admin-textarea resize-none" />
               </div>
             </div>
 
@@ -215,11 +242,25 @@ export default function AdminBlogPage() {
                 />
               </div>
               <div>
+                <label className="mb-2 block text-sm font-medium text-[#3E433E]">{t('admin.blogPage.fieldContent')} (العربية)</label>
+                <textarea value={form.content_ar} onChange={(e) => set('content_ar', e.target.value)} rows={14} dir="rtl" className="admin-textarea" />
+              </div>
+              <div>
                 <label className="mb-2 block text-sm font-medium text-[#3E433E]">{t('admin.blogPage.fieldTags')}</label>
                 <input
                   value={form.tags}
                   onChange={(e) => set('tags', e.target.value)}
                   placeholder={t('admin.blogPage.phTags')}
+                  className="admin-input"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[#3E433E]">{t('admin.blogPage.fieldTags')} (العربية)</label>
+                <input
+                  value={form.tags_ar}
+                  onChange={(e) => set('tags_ar', e.target.value)}
+                  placeholder="عضوي، فاخر، هدية"
+                  dir="rtl"
                   className="admin-input"
                 />
               </div>
@@ -256,8 +297,16 @@ export default function AdminBlogPage() {
                 <input value={form.metaTitle} onChange={(e) => set('metaTitle', e.target.value)} className="admin-input" />
               </div>
               <div>
+                <label className="mb-2 block text-sm font-medium text-[#3E433E]">{t('admin.blogPage.fieldMetaTitle')} (العربية)</label>
+                <input value={form.metaTitle_ar} onChange={(e) => set('metaTitle_ar', e.target.value)} dir="rtl" className="admin-input" />
+              </div>
+              <div>
                 <label className="mb-2 block text-sm font-medium text-[#3E433E]">{t('admin.blogPage.fieldMetaDesc')}</label>
                 <input value={form.metaDesc} onChange={(e) => set('metaDesc', e.target.value)} className="admin-input" />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[#3E433E]">{t('admin.blogPage.fieldMetaDesc')} (العربية)</label>
+                <input value={form.metaDesc_ar} onChange={(e) => set('metaDesc_ar', e.target.value)} dir="rtl" className="admin-input" />
               </div>
             </div>
 
@@ -345,7 +394,7 @@ export default function AdminBlogPage() {
                 : posts.map((post: any) => (
                     <tr key={post.id}>
                       <td>
-                        <p className="text-sm font-semibold text-[#171C14] line-clamp-1">{post.title}</p>
+                        <p className="text-sm font-semibold text-[#171C14] line-clamp-1">{localizedText(post.title, post.title_ar, i18n.language)}</p>
                         <p className="mt-0.5 text-xs text-[#7A776F] font-mono">{post.slug}</p>
                       </td>
                       <td className="hidden sm:table-cell">

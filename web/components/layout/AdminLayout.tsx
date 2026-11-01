@@ -46,7 +46,7 @@ const navGroups = [
   {
     titleKey: 'admin.groupBrand',
     items: [
-      { href: '/admin/banners', icon: ImageIcon, labelKey: 'admin.banners' },
+      // { href: '/admin/banners', icon: ImageIcon, labelKey: 'admin.banners' },
       { href: '/admin/reviews', icon: Star, labelKey: 'admin.reviews' },
       { href: '/admin/blog', icon: BookOpen, labelKey: 'admin.blog' },
     ],

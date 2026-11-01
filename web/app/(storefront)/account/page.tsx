@@ -9,39 +9,6 @@ import { Gift, Heart, MapPin, Package, Settings, Sparkles } from 'lucide-react';
 import { loyaltyApi } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
 
-const quickLinks = [
-  {
-    href: '/account/orders',
-    title: 'My orders',
-    desc: 'Track every order and review current delivery progress.',
-    icon: Package,
-  },
-  {
-    href: '/account/loyalty',
-    title: 'Loyalty points',
-    desc: 'View your points balance and full earn/redeem history.',
-    icon: Gift,
-  },
-  {
-    href: '/wishlist',
-    title: 'Wishlist',
-    desc: 'Return to saved pieces and continue your product shortlist.',
-    icon: Heart,
-  },
-  {
-    href: '/account/addresses',
-    title: 'Addresses',
-    desc: 'Keep delivery details ready for a faster checkout flow.',
-    icon: MapPin,
-  },
-  {
-    href: '/account/settings',
-    title: 'Settings',
-    desc: 'Update profile details, password, and notification preferences.',
-    icon: Settings,
-  },
-];
-
 export default function AccountPage() {
   const { data: session, status } = useSession();
   const { t } = useTranslation();
@@ -54,6 +21,13 @@ export default function AccountPage() {
   if (status === 'unauthenticated') redirect('/login');
 
   const firstName = session?.user?.name?.split(' ')[0] || 'there';
+  const quickLinks = [
+    { href: '/account/orders', title: t('account.myOrders'), desc: t('account.trackPurchases'), icon: Package },
+    { href: '/account/loyalty', title: t('loyalty.balanceLabel'), desc: t('loyalty.viewHistory'), icon: Gift },
+    { href: '/wishlist', title: t('wishlist.title'), desc: t('wishlist.emptyDesc'), icon: Heart },
+    { href: '/account/addresses', title: t('account.addresses'), desc: t('account.addressesDescription'), icon: MapPin },
+    { href: '/account/settings', title: t('account.settings'), desc: t('account.settingsDescription'), icon: Settings },
+  ];
 
   return (
     <div className="space-y-6">
@@ -62,22 +36,21 @@ export default function AccountPage() {
           <div>
             <div className="lux-pill w-fit px-4 py-2">
               <Sparkles className="h-3.5 w-3.5" />
-              Welcome back
+              {t('account.welcomeBack')}
             </div>
             <h2 className="mt-7 font-heading text-[clamp(2.5rem,4vw,4rem)] leading-[0.96] tracking-[-0.05em] text-[#1E2519]">
-              Bonjour, {firstName}.
+              {t('account.welcome', { name: firstName })}
             </h2>
             <p className="mt-4 max-w-2xl text-[15px] leading-8 text-[#5B6455]">
-              Your account dashboard keeps the essentials close at hand, with cleaner
-              navigation and a more intentional presentation than the previous version.
+              {t('account.accountSubtitle')}
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { value: 'Orders', label: 'tracking ready' },
-              { value: 'Wishlist', label: 'saved edit' },
-              { value: 'Details', label: 'up to date' },
+              { value: t('account.orders'), label: t('account.trackingReady') },
+              { value: t('wishlist.title'), label: t('account.savedEdit') },
+              { value: t('account.details'), label: t('account.upToDate') },
             ].map((item) => (
               <div key={item.label} className="surface-panel px-5 py-5">
                 <p className="font-heading text-[1.75rem] leading-none tracking-[-0.05em] text-[#1E2519]">
@@ -134,25 +107,24 @@ export default function AccountPage() {
 
           <div className="surface-olive p-6">
             <p className="text-[10px] uppercase tracking-[0.24em] text-[#6C8349]">
-              Account note
+              {t('account.note')}
             </p>
             <h3 className="mt-3 font-heading text-[2rem] leading-[0.98] tracking-[-0.05em] text-[#1E2519]">
-              Your next order should feel easier.
+              {t('account.nextOrder')}
             </h3>
             <p className="mt-4 text-sm leading-7 text-[#4E5948]">
-              Save an address, keep favorites close, and move through the storefront with
-              less friction and a cleaner luxury feel.
+              {t('account.noteDescription')}
             </p>
           </div>
 
           <div className="surface-panel p-6">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-[#78805F]">Profile</p>
+            <p className="text-[10px] uppercase tracking-[0.24em] text-[#78805F]">{t('account.profile')}</p>
             <p className="mt-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">
-              {session?.user?.name || 'Vibio member'}
+              {session?.user?.name || t('account.member')}
             </p>
             <p className="mt-2 text-sm text-[#5B6455]">{session?.user?.email}</p>
             <Link href="/account/settings" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#273E1C]">
-              Update your details
+              {t('account.updateDetails')}
             </Link>
           </div>
         </div>

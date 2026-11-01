@@ -4,6 +4,10 @@ import Image from '@/components/common/OptimizedImage';
 import { ArrowRight, BookOpen, Clock, Feather, Sparkles } from 'lucide-react';
 import { formatDate, readingTime } from '@/lib/utils';
 import { SERVER_API_URL } from '@/lib/serverApiUrl';
+import { localizeServerData } from '@/lib/i18n/server';
+import { getServerLanguage } from '@/lib/i18n/server';
+import fr from '@/lib/i18n/locales/fr.json';
+import ar from '@/lib/i18n/locales/ar.json';
 
 export const metadata: Metadata = {
   title: 'Journal',
@@ -20,7 +24,7 @@ async function getPosts() {
 
     if (!res.ok) return { posts: [] };
 
-    return res.json();
+    return localizeServerData(await res.json());
   } catch {
     return { posts: [] };
   }
@@ -28,6 +32,7 @@ async function getPosts() {
 
 export default async function BlogPage() {
   const { posts } = await getPosts();
+  const copy = (getServerLanguage() === 'ar' ? ar : fr).blog;
 
   const safePosts = Array.isArray(posts) ? posts : [];
   const featuredPost = safePosts?.[0];
@@ -43,7 +48,7 @@ export default async function BlogPage() {
               <div className="absolute -left-32 -top-40 h-[420px] w-[420px] rounded-full bg-[#EAF3DF]/70 blur-[110px]" />
               <div className="absolute right-0 top-0 h-full w-[48%] bg-[radial-gradient(circle_at_80%_20%,rgba(198,162,94,0.18),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(246,241,230,0.74))]" />
               <div className="absolute bottom-[-12%] right-[10%] font-heading text-[19vw] leading-none tracking-[-0.08em] text-[#1E2519]/[0.025]">
-                Journal
+                {copy.eyebrow}
               </div>
             </div>
 
@@ -51,27 +56,25 @@ export default async function BlogPage() {
               <div className="max-w-3xl">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#E2D5BE] bg-white/80 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[#6F7D58] shadow-[0_18px_50px_rgba(39,62,28,0.06)] backdrop-blur">
                   <Sparkles className="h-3.5 w-3.5" />
-                  Vibio journal
+                  {copy.eyebrow}
                 </div>
 
                 <h1 className="mt-7 max-w-[10ch] font-heading text-[clamp(3.5rem,7vw,7.8rem)] leading-[0.86] tracking-[-0.075em] text-[#182215]">
-                  Stories behind refined rituals.
+                  {copy.title}
                 </h1>
 
                 <p className="mt-7 max-w-2xl text-[15px] leading-8 text-[#5B6455] sm:text-[16px]">
-                  Editorial notes, ingredient stories, hosting ideas, and product insights
-                  designed to make every natural ritual feel more considered, sensory, and
-                  beautifully composed.
+                  {copy.description}
                 </p>
 
                 <div className="mt-9 flex flex-wrap items-center gap-3">
                   <Link href="#journal-grid" className="btn-gold">
-                    Explore articles
+                    {copy.exploreArticles}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
 
                   <div className="lux-pill px-4 py-3">
-                    {safePosts.length} {safePosts.length === 1 ? 'published piece' : 'published pieces'}
+                    {safePosts.length} {safePosts.length === 1 ? copy.publishedPiece : copy.publishedPieces}
                   </div>
                 </div>
               </div>
@@ -81,20 +84,20 @@ export default async function BlogPage() {
                   {
                     icon: BookOpen,
                     value: `${safePosts.length || 0}`,
-                    label: 'Published pieces',
-                    text: 'Guides, notes, and editorial stories.',
+                    label: copy.published,
+                    text: copy.guidesNotes,
                   },
                   {
                     icon: Feather,
                     value: 'Guides',
-                    label: 'And inspiration',
-                    text: 'For rituals, gifting, and hosting.',
+                    label: copy.andInspiration,
+                    text: copy.ritualsGiftingHosting,
                   },
                   {
                     icon: Clock,
                     value: 'Editorial',
-                    label: 'Brand voice',
-                    text: 'A calmer way to discover products.',
+                    label: copy.brandVoice,
+                    text: copy.calmerDiscovery,
                   },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -138,12 +141,11 @@ export default async function BlogPage() {
                 </div>
 
                 <h2 className="font-heading text-[clamp(2.5rem,5vw,4.4rem)] leading-[0.9] tracking-[-0.06em] text-[#1E2519]">
-                  The journal is being curated.
+                  {copy.emptyTitle}
                 </h2>
 
                 <p className="mt-5 text-[15px] leading-8 text-[#5B6455]">
-                  Articles, guides, and ritual notes will appear here once the editorial
-                  collection is ready.
+                  {copy.emptyDescription}
                 </p>
               </div>
             </div>
@@ -207,12 +209,12 @@ export default async function BlogPage() {
                           )}
 
                           {featuredPost.content && (
-                            <span>{readingTime(featuredPost.content)} min read</span>
+                            <span>{readingTime(featuredPost.content)} {copy.minRead}</span>
                           )}
                         </div>
 
                         <span className="mt-5 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#24531B]">
-                          Read article
+                          {copy.readArticle}
                           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#24531B] text-white transition duration-300 group-hover:translate-x-1">
                             <ArrowRight className="h-4 w-4" />
                           </span>
@@ -226,21 +228,20 @@ export default async function BlogPage() {
               {/* JOURNAL GRID */}
               <div id="journal-grid" className="surface-shell relative overflow-hidden p-6 sm:p-7 lg:p-8">
                 <div className="pointer-events-none absolute bottom-[-14%] right-[-4%] font-heading text-[16vw] leading-none tracking-[-0.08em] text-[#1E2519]/[0.025]">
-                  Notes
+                  {copy.more}
                 </div>
 
                 <div className="relative mb-7 flex flex-col gap-5 border-b border-[#ECE6D9] pb-6 lg:flex-row lg:items-end lg:justify-between">
                   <div>
-                    <p className="section-eyebrow">More from the journal</p>
+                    <p className="section-eyebrow">{copy.more}</p>
 
                     <h2 className="mt-3 max-w-4xl font-heading text-[clamp(2.4rem,4.6vw,4.7rem)] leading-[0.92] tracking-[-0.06em] text-[#1E2519]">
-                      Guides, rituals, and brand perspective.
+                      {copy.moreTitle}
                     </h2>
                   </div>
 
                   <p className="max-w-md text-sm leading-7 text-[#68725F]">
-                    A curated editorial space for natural products, refined hosting,
-                    ingredient stories, and premium everyday rituals.
+                    {copy.moreDescription}
                   </p>
                 </div>
 
@@ -297,7 +298,7 @@ export default async function BlogPage() {
                           <div className="mt-6 flex items-center justify-between border-t border-[#ECE6D9] pt-4 text-[10px] uppercase tracking-[0.18em] text-[#78805F]">
                             <div className="flex flex-wrap gap-3">
                               {post.publishedAt && <span>{formatDate(post.publishedAt)}</span>}
-                              {post.content && <span>{readingTime(post.content)} min read</span>}
+                              {post.content && <span>{readingTime(post.content)} {copy.minRead}</span>}
                             </div>
 
                             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#D7C7AD] bg-white text-[#24531B] transition duration-300 group-hover:border-[#24531B] group-hover:bg-[#24531B] group-hover:text-white">
@@ -311,11 +312,11 @@ export default async function BlogPage() {
                 ) : (
                   <div className="relative rounded-[32px] border border-[#E7DECF] bg-[#FBFAF6] px-6 py-16 text-center">
                     <h3 className="font-heading text-[2.6rem] leading-none tracking-[-0.05em] text-[#1E2519]">
-                      More stories coming soon.
+                      {copy.comingSoon}
                     </h3>
 
                     <p className="mt-4 text-sm leading-7 text-[#5B6455]">
-                      The editorial collection will grow with new guides, rituals, and product stories.
+                      {copy.comingSoonDescription}
                     </p>
                   </div>
                 )}

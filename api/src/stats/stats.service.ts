@@ -107,7 +107,7 @@ export class StatsService {
 
     const products = await this.prisma.product.findMany({
       where: { id: { in: items.map((i) => i.productId) } },
-      select: { id: true, name: true, images: true },
+      select: { id: true, name: true, name_ar: true, images: true },
     });
 
     const result = items.map((item) => ({

@@ -10,12 +10,20 @@ export class CreateCategoryDto {
   @IsString()
   name: string;
 
+  @IsOptional()
+  @IsString()
+  name_ar?: string;
+
   @IsString()
   slug: string;
 
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  description_ar?: string;
 
   @IsOptional()
   @IsString()

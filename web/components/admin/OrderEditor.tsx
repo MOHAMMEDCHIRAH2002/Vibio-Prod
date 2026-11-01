@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { customersApi, productsApi } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 type OrderLine = {
   key: string;
@@ -77,6 +78,7 @@ export default function OrderEditor({
     notes?: string;
   }) => void;
 }) {
+  const { t, i18n } = useTranslation();
   const [customerSearch, setCustomerSearch] = useState('');
   const [productSearch, setProductSearch] = useState('');
   const [userId, setUserId] = useState(initial?.userId || '');
@@ -146,6 +148,7 @@ export default function OrderEditor({
 
   return (
     <form
+      dir={i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'}
       className="admin-panel space-y-6 p-5 sm:p-6"
       onSubmit={(event) => {
         event.preventDefault();
@@ -162,15 +165,15 @@ export default function OrderEditor({
       }}
     >
       <div>
-        <p className="admin-eyebrow">Customer</p>
+        <p className="admin-eyebrow">{t('adminOrderForm.customer')}</p>
         <h2 className="mt-3 font-heading text-[1.7rem] leading-none tracking-[-0.05em] text-[#171C14]">
-          Order details
+          {t('adminOrderForm.orderDetail')}
         </h2>
-        <label className="mb-2 mt-5 block text-sm font-medium text-[#3E433E]">Find customer</label>
+        <label className="mb-2 mt-5 block text-sm font-medium text-[#3E433E]">{t('adminOrderForm.findCustomer')}</label>
         <input
           value={customerSearch}
           onChange={(event) => setCustomerSearch(event.target.value)}
-          placeholder="Search by name or email"
+          placeholder={t('adminOrderForm.searchCustomer')}
           className="admin-input mb-3"
         />
         <select
@@ -190,7 +193,7 @@ export default function OrderEditor({
           }}
           className="admin-select"
         >
-          <option value="">{customersLoading ? 'Loading customers…' : 'Select a customer'}</option>
+          <option value="">{customersLoading ? t('adminOrderForm.loadingCustomers') : t('adminOrderForm.selectCustomer')}</option>
           {initial?.userId && !customers.some((customer: any) => customer.id === initial.userId) && (
             <option value={initial.userId}>{selectedCustomerLabel}</option>
           )}
@@ -203,14 +206,14 @@ export default function OrderEditor({
             </option>
           ))}
         </select>
-        {customersError && <p className="mt-2 text-sm text-red-700">Could not load customers.</p>}
+        {customersError && <p className="mt-2 text-sm text-red-700">{t('adminOrderForm.customerLoadFailed')}</p>}
       </div>
 
       <div>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="admin-eyebrow">Products</p>
-            <h3 className="mt-2 text-lg font-semibold text-[#171C14]">Items and quantities</h3>
+            <p className="admin-eyebrow">{t('adminOrderForm.products')}</p>
+            <h3 className="mt-2 text-lg font-semibold text-[#171C14]">{t('adminOrderForm.itemsQuantities')}</h3>
           </div>
           <button
             type="button"
@@ -222,17 +225,17 @@ export default function OrderEditor({
             }
             className="admin-btn-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#315824]"
           >
-            Add item
+            {t('adminOrderForm.addItem')}
           </button>
         </div>
         <input
           value={productSearch}
           onChange={(event) => setProductSearch(event.target.value)}
-          placeholder="Search products"
+          placeholder={t('adminOrderForm.searchProducts')}
           className="admin-input mt-4"
         />
-        {productsError && <p className="mt-2 text-sm text-red-700">Could not load products.</p>}
-        {productsLoading && <p className="mt-2 text-sm text-[#7A776F]">Loading products…</p>}
+        {productsError && <p className="mt-2 text-sm text-red-700">{t('adminOrderForm.productsLoadFailed')}</p>}
+        {productsLoading && <p className="mt-2 text-sm text-[#7A776F]">{t('adminOrderForm.loadingProducts')}</p>}
         <div className="mt-4 space-y-3">
           {lines.map((line) => {
             const currentVariant = variants.find((variant: any) => variant.id === line.variantId);
@@ -252,18 +255,18 @@ export default function OrderEditor({
                   }}
                   className="admin-select min-w-0"
                 >
-                  <option value="">Select a product variant</option>
+                  <option value="">{t('adminOrderForm.selectVariant')}</option>
                   {line.variantId && !currentVariant && (
-                    <option value={line.variantId}>{line.fallbackLabel || 'Existing order item'}</option>
+                    <option value={line.variantId}>{line.fallbackLabel || t('adminOrderForm.existingItem')}</option>
                   )}
                   {variants.map((variant: any) => (
                     <option key={variant.id} value={variant.id} disabled={!variant.productActive && line.variantId !== variant.id}>
-                      {variant.productName} — {variant.name}: {variant.value} · {formatPrice(variant.price)} · stock {variant.stock}
+                      {variant.productName} — {variant.name}: {variant.value} · {formatPrice(variant.price)} · {t('adminOrderForm.stock')} {variant.stock}
                     </option>
                   ))}
                 </select>
                 <input
-                  aria-label="Quantity"
+                  aria-label={t('adminOrderForm.quantity')}
                   type="number"
                   min={1}
                   required
@@ -281,7 +284,7 @@ export default function OrderEditor({
                   onClick={() => setLines((current) => current.filter((item) => item.key !== line.key))}
                   className="admin-btn-secondary disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#315824]"
                 >
-                  Remove
+                  {t('adminOrderForm.remove')}
                 </button>
               </div>
             );
@@ -290,18 +293,18 @@ export default function OrderEditor({
       </div>
 
       <div>
-        <p className="admin-eyebrow">Delivery</p>
-        <h3 className="mt-2 text-lg font-semibold text-[#171C14]">Shipping address</h3>
+        <p className="admin-eyebrow">{t('adminOrderForm.delivery')}</p>
+        <h3 className="mt-2 text-lg font-semibold text-[#171C14]">{t('adminOrderForm.shippingAddress')}</h3>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {([
-            ['fullName', 'Full name'],
-            ['phone', 'Phone'],
-            ['line1', 'Address line 1'],
-            ['line2', 'Address line 2'],
-            ['city', 'City'],
-            ['state', 'State / region'],
-            ['postalCode', 'Postal code'],
-            ['country', 'Country'],
+            ['fullName', t('adminOrderForm.fullName')],
+            ['phone', t('adminOrderForm.phone')],
+            ['line1', t('adminOrderForm.addressLine1')],
+            ['line2', t('adminOrderForm.addressLine2')],
+            ['city', t('adminOrderForm.city')],
+            ['state', t('adminOrderForm.state')],
+            ['postalCode', t('adminOrderForm.postalCode')],
+            ['country', t('adminOrderForm.country')],
           ] as const).map(([field, label]) => (
             <label key={field} className="block text-sm font-medium text-[#3E433E]">
               {label}
@@ -318,7 +321,7 @@ export default function OrderEditor({
 
       <div>
         <label className="block text-sm font-medium text-[#3E433E]">
-          Order notes
+          {t('adminOrderForm.notes')}
           <textarea
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
@@ -331,20 +334,20 @@ export default function OrderEditor({
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#EEE6DB] pt-5">
         {initial && (
           <p className="w-full text-xs text-[#8A631D]">
-            Updating items changes the order total and inventory. This does not collect or refund a payment.
+            {t('adminOrderForm.updateWarning')}
           </p>
         )}
         <div className="text-sm text-[#6B6A63]">
-          <p>Subtotal: {formatPrice(currentSubtotal)}</p>
-          <p>Shipping: {shipping === 0 ? 'Free' : formatPrice(shipping)}</p>
-          <p className="mt-1 font-semibold text-[#171C14]">Estimated total: {formatPrice(total)}</p>
+          <p>{t('adminOrderForm.subtotal')}: {formatPrice(currentSubtotal)}</p>
+          <p>{t('adminOrderForm.shipping')}: {shipping === 0 ? t('adminOrderForm.free') : formatPrice(shipping)}</p>
+          <p className="mt-1 font-semibold text-[#171C14]">{t('adminOrderForm.estimatedTotal')}: {formatPrice(total)}</p>
         </div>
         <button
           type="submit"
           disabled={saving || customersError || productsError}
           className="admin-btn-primary disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#315824]"
         >
-          {saving ? 'Saving…' : initial ? 'Save order details' : 'Create order'}
+          {saving ? t('adminOrderForm.saving') : initial ? t('adminOrderForm.saveDetails') : t('adminOrderForm.create')}
         </button>
       </div>
     </form>

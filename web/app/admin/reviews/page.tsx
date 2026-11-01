@@ -7,13 +7,23 @@ import { useTranslation } from 'react-i18next';
 import { reviewsApi, productsApi } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
+import { localizedText } from '@/lib/i18n/localized';
 
 type Tab = 'all' | 'pending' | 'approved';
 
-const emptyForm = { productId: '', rating: 5, title: '', body: '', reviewerName: '' };
+const emptyForm = {
+  productId: '',
+  rating: 5,
+  title: '',
+  title_ar: '',
+  body: '',
+  body_ar: '',
+  reviewerName: '',
+  reviewerName_ar: '',
+};
 
 export default function AdminReviewsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>('all');
   const [page, setPage] = useState(1);
@@ -163,6 +173,17 @@ export default function AdminReviewsPage() {
                 <p className="mt-1 text-xs text-[#6C8349]">{t('admin.reviewsPage.selected', { name: productSearch })}</p>
               )}
             </div>
+            <div>
+              <label className="admin-label">{t('admin.reviewsPage.clientName')} (العربية)</label>
+              <input
+                type="text"
+                value={form.reviewerName_ar}
+                onChange={(e) => setForm((f) => ({ ...f, reviewerName_ar: e.target.value }))}
+                placeholder="اسم العميل بالعربية"
+                dir="rtl"
+                className="admin-input mt-1"
+              />
+            </div>
 
             {/* Client name */}
             <div>
@@ -216,6 +237,17 @@ export default function AdminReviewsPage() {
                 className="admin-input mt-1"
               />
             </div>
+            <div>
+              <label className="admin-label">{t('admin.reviewsPage.titleOptional')} (العربية)</label>
+              <input
+                type="text"
+                value={form.title_ar}
+                onChange={(e) => setForm((f) => ({ ...f, title_ar: e.target.value }))}
+                placeholder="العنوان بالعربية"
+                dir="rtl"
+                className="admin-input mt-1"
+              />
+            </div>
 
             {/* Body */}
             <div>
@@ -225,6 +257,17 @@ export default function AdminReviewsPage() {
                 value={form.body}
                 onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
                 placeholder={t('admin.reviewsPage.bodyPh')}
+                className="admin-input mt-1 resize-none"
+              />
+            </div>
+            <div>
+              <label className="admin-label">{t('admin.reviewsPage.bodyOptional')} (العربية)</label>
+              <textarea
+                rows={4}
+                value={form.body_ar}
+                onChange={(e) => setForm((f) => ({ ...f, body_ar: e.target.value }))}
+                placeholder="المراجعة بالعربية"
+                dir="rtl"
                 className="admin-input mt-1 resize-none"
               />
             </div>
@@ -327,16 +370,16 @@ export default function AdminReviewsPage() {
 
                   {review.product && (
                     <p className="mt-3 text-xs uppercase tracking-[0.18em] text-[#6C8349]">
-                      {t('admin.reviewsPage.on')} {review.product.name}
+                      {t('admin.reviewsPage.on')}                       {localizedText(review.product.name, review.product.name_ar, i18n.language)}
                     </p>
                   )}
 
                   {review.title && (
-                    <p className="mt-3 text-sm font-semibold text-[#171C14]">{review.title}</p>
+                    <p className="mt-3 text-sm font-semibold text-[#171C14]">{localizedText(review.title, review.title_ar, i18n.language)}</p>
                   )}
 
                   {review.body && (
-                    <p className="mt-2 text-sm leading-7 text-[#5E5C54]">{review.body}</p>
+                    <p className="mt-2 text-sm leading-7 text-[#5E5C54]">{localizedText(review.body, review.body_ar, i18n.language)}</p>
                   )}
                 </div>
 

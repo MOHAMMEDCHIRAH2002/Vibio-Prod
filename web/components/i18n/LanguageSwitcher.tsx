@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   applyDocumentDirection,
   scopeFromPath,
@@ -23,17 +24,22 @@ interface Props {
 
 export default function LanguageSwitcher({ variant = 'light', className }: Props) {
   const { i18n } = useTranslation();
+  const queryClient = useQueryClient();
   const pathname = usePathname();
-  const current = (i18n.language?.startsWith('ar') ? 'ar' : 'fr') as Language;
+  const router = useRouter();
+  const current = (i18n.resolvedLanguage?.startsWith('ar') ? 'ar' : 'fr') as Language;
 
-  const change = (lang: Language) => {
+  const change = async (lang: Language) => {
     if (lang === current) return;
-    i18n.changeLanguage(lang);
+    await i18n.changeLanguage(lang);
+    queryClient.invalidateQueries();
     applyDocumentDirection(lang);
     if (typeof window !== 'undefined') {
       // Persist to the active scope only — admin and storefront stay independent.
       window.localStorage.setItem(storageKeyForScope(scopeFromPath(pathname)), lang);
+      document.cookie = `${storageKeyForScope(scopeFromPath(pathname))}=${lang}; path=/; max-age=31536000; samesite=lax`;
     }
+    router.refresh();
   };
 
   return (

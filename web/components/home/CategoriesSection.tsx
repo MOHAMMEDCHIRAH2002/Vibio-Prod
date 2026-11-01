@@ -77,7 +77,8 @@ function columnSpans(count: number): number[] {
 }
 
 export default function CategoriesSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
   const { data: categories, isLoading } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: categoriesApi.list,
@@ -154,7 +155,7 @@ export default function CategoriesSection() {
                     {/* Image — or a branded monogram tile when the category has none,
                         so a missing image never leaves a blank half-card. */}
                     <div
-                      className={`absolute right-0 bottom-0 h-full ${style.mediaWrap} overflow-hidden rounded-l-[28px]`}
+                      className={`absolute bottom-0 h-full ${style.mediaWrap} overflow-hidden ${isArabic ? 'left-0 rounded-r-[28px]' : 'right-0 rounded-l-[28px]'}`}
                     >
                       {image ? (
                         <Image
@@ -176,18 +177,18 @@ export default function CategoriesSection() {
                       )}
 
                       {/* Image soft fade */}
-                      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,254,250,0.92)_0%,rgba(255,254,250,0.42)_28%,rgba(255,254,250,0.02)_70%)]" />
+                      <div className={`absolute inset-0 ${isArabic ? 'bg-[linear-gradient(270deg,rgba(255,254,250,0.92)_0%,rgba(255,254,250,0.42)_28%,rgba(255,254,250,0.02)_70%)]' : 'bg-[linear-gradient(90deg,rgba(255,254,250,0.92)_0%,rgba(255,254,250,0.42)_28%,rgba(255,254,250,0.02)_70%)]'}`} />
                       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(30,37,25,0.08))]" />
                     </div>
 
                     {/* Text readability layer */}
-                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,254,250,0.98)_0%,rgba(255,254,250,0.9)_34%,rgba(255,254,250,0.34)_62%,rgba(255,254,250,0)_100%)]" />
+                    <div className={`pointer-events-none absolute inset-0 ${isArabic ? 'bg-[linear-gradient(270deg,rgba(255,254,250,0.98)_0%,rgba(255,254,250,0.9)_34%,rgba(255,254,250,0.34)_62%,rgba(255,254,250,0)_100%)]' : 'bg-[linear-gradient(90deg,rgba(255,254,250,0.98)_0%,rgba(255,254,250,0.9)_34%,rgba(255,254,250,0.34)_62%,rgba(255,254,250,0)_100%)]'}`} />
 
                     {/* Small luxury highlight */}
                     <div className="pointer-events-none absolute left-6 top-6 h-16 w-16 rounded-full bg-[#D8B36A]/10 blur-2xl" />
 
                     <div
-                      className={`relative z-10 flex h-full ${style.content} flex-col justify-between gap-8`}
+                      className={`relative z-10 flex h-full ${style.content} flex-col justify-between gap-8 ${isArabic ? 'ml-auto text-right' : 'text-left'}`}
                     >
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#3D8B45]">

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { SERVER_API_URL } from '@/lib/serverApiUrl';
 import CategoryPageClient from './CategoryPageClient';
+import { localizeServerData } from '@/lib/i18n/server';
 
 interface Props {
   params: { slug: string };
@@ -15,7 +16,7 @@ async function getCategory(slug: string) {
 
     if (!res.ok) return null;
 
-    return res.json();
+    return localizeServerData(await res.json());
   } catch {
     return null;
   }

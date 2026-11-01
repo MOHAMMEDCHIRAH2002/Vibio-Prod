@@ -102,13 +102,13 @@ export class BlogService {
   }
 
   async create(data: any, authorId: string) {
-    const { tags, ...rest } = data;
+    const { tags, tags_ar: tagsAr, ...rest } = data;
     const result = await this.prisma.blogPost.create({
       data: {
         ...rest,
         ...this.normalizeStatus(data),
         authorId,
-        tags: this.buildTags(tags),
+        tags: this.buildTags(tags, tagsAr),
       },
       include: { tags: true },
     });
@@ -117,14 +117,14 @@ export class BlogService {
   }
 
   async update(id: string, data: any) {
-    const { tags, ...rest } = data;
+    const { tags, tags_ar: tagsAr, ...rest } = data;
     const result = await this.prisma.blogPost.update({
       where: { id },
       data: {
         ...rest,
         ...this.normalizeStatus(data),
         tags: tags !== undefined
-          ? { set: [], connectOrCreate: (this.buildTags(tags) as any)?.connectOrCreate }
+          ? { set: [], connectOrCreate: (this.buildTags(tags, tagsAr) as any)?.connectOrCreate }
           : undefined,
       },
       include: { tags: true },
@@ -166,12 +166,16 @@ export class BlogService {
     return { status, scheduledAt: null };
   }
 
-  private buildTags(tags?: string[]) {
+  private buildTags(tags?: string[], tagsAr?: string[]) {
     if (!tags?.length) return undefined;
     return {
-      connectOrCreate: tags.map((t) => ({
+      connectOrCreate: tags.map((t, index) => ({
         where: { slug: t.toLowerCase().replace(/\s+/g, '-') },
-        create: { name: t, slug: t.toLowerCase().replace(/\s+/g, '-') },
+        create: {
+          name: t,
+          name_ar: tagsAr?.[index] || null,
+          slug: t.toLowerCase().replace(/\s+/g, '-'),
+        },
       })),
     };
   }

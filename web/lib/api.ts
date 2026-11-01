@@ -1,5 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { getSession, signOut } from 'next-auth/react';
+import i18n from './i18n/config';
+import { localizeApiData } from './i18n/localized';
 import type {
   Cart,
   Category,
@@ -77,6 +79,12 @@ export const api = axios.create({
   timeout: 10000,
 });
 
+api.interceptors.request.use((config) => {
+  config.headers = config.headers ?? {};
+  (config.headers as any)['Accept-Language'] = i18n.resolvedLanguage === 'ar' ? 'ar' : 'fr';
+  return config;
+});
+
 api.interceptors.request.use(async (config) => {
   // Do not block the request on a session fetch when possible.
   // Prefer the cached session token; only await an inflight session if one already exists.
@@ -117,7 +125,11 @@ api.interceptors.request.use(async (config) => {
 });
 
 api.interceptors.response.use(
-  (res) => res.data,
+  (res) => {
+    const isAdminRoute =
+      typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+    return isAdminRoute ? res.data : localizeApiData(res.data, i18n.resolvedLanguage);
+  },
   async (error: AxiosError) => {
     const status = error.response?.status;
     const original = error.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined;

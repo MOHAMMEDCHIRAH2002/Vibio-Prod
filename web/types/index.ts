@@ -11,7 +11,9 @@ export interface Category {
   id: string;
   slug: string;
   name: string;
+  name_ar?: string | null;
   description?: string;
+  description_ar?: string | null;
   image?: string;
   parentId?: string;
   children?: Category[];
@@ -22,7 +24,9 @@ export interface Category {
 export interface Variant {
   id: string;
   name: string;
+  name_ar?: string | null;
   value: string;
+  value_ar?: string | null;
   price: number;
   stock: number;
   sku?: string;
@@ -31,6 +35,7 @@ export interface Variant {
 export interface Tag {
   id: string;
   name: string;
+  name_ar?: string | null;
   slug: string;
 }
 
@@ -38,8 +43,11 @@ export interface Product {
   id: string;
   slug: string;
   name: string;
+  name_ar?: string | null;
   description: string;
+  description_ar?: string | null;
   shortDesc?: string;
+  shortDesc_ar?: string | null;
   images: string[];
   categoryId: string;
   category?: Category;
@@ -50,7 +58,9 @@ export interface Product {
   isFeatured: boolean;
   isActive: boolean;
   metaTitle?: string;
+  metaTitle_ar?: string | null;
   metaDesc?: string;
+  metaDesc_ar?: string | null;
   weight?: number;
   reviews?: Review[];
   _count?: { reviews: number };
@@ -65,7 +75,9 @@ export interface Review {
   user: { name?: string; image?: string };
   rating: number;
   title?: string;
+  title_ar?: string | null;
   body?: string;
+  body_ar?: string | null;
   isApproved: boolean;
   createdAt: string;
 }
@@ -74,7 +86,9 @@ export interface CartItem {
   variantId: string;
   productId: string;
   name: string;
+  name_ar?: string | null;
   variantName: string;
+  variantName_ar?: string | null;
   price: number;
   quantity: number;
   image?: string;
@@ -106,7 +120,9 @@ export interface Address {
 export interface OrderItem {
   id: string;
   name: string;
+  name_ar?: string | null;
   variantName?: string;
+  variantName_ar?: string | null;
   price: number;
   quantity: number;
   image?: string;
@@ -145,10 +161,13 @@ export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
 export interface Banner {
   id: string;
   title: string;
+  title_ar?: string | null;
   subtitle?: string;
+  subtitle_ar?: string | null;
   imageDesktop: string;
   imageMobile?: string;
   ctaText?: string;
+  ctaText_ar?: string | null;
   ctaLink?: string;
   sortOrder: number;
   isActive: boolean;
@@ -158,8 +177,15 @@ export interface BlogPost {
   id: string;
   slug: string;
   title: string;
+  title_ar?: string | null;
   excerpt?: string;
+  excerpt_ar?: string | null;
   content: string;
+  content_ar?: string | null;
+  metaTitle?: string;
+  metaTitle_ar?: string | null;
+  metaDesc?: string;
+  metaDesc_ar?: string | null;
   coverImage?: string;
   isPublished: boolean;
   publishedAt?: string;

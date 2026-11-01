@@ -22,9 +22,10 @@ import { Edit, Eye, EyeOff, GripVertical, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { bannersApi } from '@/lib/api';
 import { toast } from 'sonner';
+import { localizedText } from '@/lib/i18n/localized';
 
 function SortableRow({ banner, onEdit, onDelete, onToggle }: any) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: banner.id,
   });
@@ -49,13 +50,13 @@ function SortableRow({ banner, onEdit, onDelete, onToggle }: any) {
 
       <div className="relative h-16 w-28 flex-shrink-0 overflow-hidden rounded-[1rem] bg-[#F1ECE4]">
         {banner.imageDesktop && (
-          <Image src={banner.imageDesktop} alt={banner.title} fill className="object-cover" />
+          <Image src={banner.imageDesktop} alt={localizedText(banner.title, banner.title_ar, i18n.language)} fill className="object-cover" />
         )}
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-[#171C14]">{banner.title}</p>
-        {banner.subtitle && <p className="mt-1 truncate text-xs text-[#7A776F]">{banner.subtitle}</p>}
+        <p className="truncate text-sm font-semibold text-[#171C14]">{localizedText(banner.title, banner.title_ar, i18n.language)}</p>
+        {banner.subtitle && <p className="mt-1 truncate text-xs text-[#7A776F]">{localizedText(banner.subtitle, banner.subtitle_ar, i18n.language)}</p>}
         {banner.ctaLink && <p className="mt-1 truncate text-xs text-[#6C8349]">{banner.ctaLink}</p>}
       </div>
 
@@ -80,9 +81,12 @@ function SortableRow({ banner, onEdit, onDelete, onToggle }: any) {
 
 const emptyForm = {
   title: '',
+  title_ar: '',
   subtitle: '',
+  subtitle_ar: '',
   imageDesktop: '',
   ctaText: '',
+  ctaText_ar: '',
   ctaLink: '',
   isActive: true,
   sortOrder: 0,
@@ -160,9 +164,12 @@ export default function AdminBannersPage() {
     setEditId(banner.id);
     setForm({
       title: banner.title ?? '',
+      title_ar: banner.title_ar ?? '',
       subtitle: banner.subtitle ?? '',
+      subtitle_ar: banner.subtitle_ar ?? '',
       imageDesktop: banner.imageDesktop ?? '',
       ctaText: banner.ctaText ?? '',
+      ctaText_ar: banner.ctaText_ar ?? '',
       ctaLink: banner.ctaLink ?? '',
       isActive: banner.isActive ?? true,
       sortOrder: banner.sortOrder ?? 0,
@@ -222,9 +229,12 @@ export default function AdminBannersPage() {
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {[
               { key: 'title', label: t('admin.bannersPage.fieldTitle'), placeholder: t('admin.bannersPage.phTitle') },
+              { key: 'title_ar', label: `${t('admin.bannersPage.fieldTitle')} (العربية)`, placeholder: 'العنوان بالعربية' },
               { key: 'subtitle', label: t('admin.bannersPage.fieldSubtitle'), placeholder: t('admin.bannersPage.phSubtitle') },
+              { key: 'subtitle_ar', label: `${t('admin.bannersPage.fieldSubtitle')} (العربية)`, placeholder: 'العنوان الفرعي بالعربية' },
               { key: 'imageDesktop', label: t('admin.bannersPage.fieldImage'), placeholder: 'https://res.cloudinary.com/...' },
               { key: 'ctaText', label: t('admin.bannersPage.fieldCtaText'), placeholder: t('admin.bannersPage.phCtaText') },
+              { key: 'ctaText_ar', label: `${t('admin.bannersPage.fieldCtaText')} (العربية)`, placeholder: 'النص بالعربية' },
               { key: 'ctaLink', label: t('admin.bannersPage.fieldCtaLink'), placeholder: t('admin.bannersPage.phCtaLink') },
             ].map(({ key, label, placeholder }) => (
               <div key={key}>

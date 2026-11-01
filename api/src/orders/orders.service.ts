@@ -102,7 +102,12 @@ export class OrdersService {
         where: { id: { in: cartData.items.map((item) => item.variantId) } },
         include: {
           product: {
-            select: { name: true, images: true, isActive: true },
+            select: {
+              name: true,
+              name_ar: true,
+              images: true,
+              isActive: true,
+            },
           },
         },
       });
@@ -122,7 +127,9 @@ export class OrdersService {
           productId: variant.productId,
           variantId: variant.id,
           name: variant.product.name,
+          name_ar: variant.product.name_ar,
           variantName: `${variant.name}: ${variant.value}`,
+          variantName_ar: `${variant.name_ar || variant.name}: ${variant.value_ar || variant.value}`,
           price: Number(variant.price),
           quantity: item.quantity,
           image: variant.product.images[0],
@@ -320,7 +327,7 @@ export class OrdersService {
       where,
       include: {
         items: {
-          include: { product: { select: { name: true, slug: true, images: true } } },
+          include: { product: { select: { name: true, name_ar: true, slug: true, images: true } } },
         },
         user: { select: { name: true, email: true, phone: true } },
       },

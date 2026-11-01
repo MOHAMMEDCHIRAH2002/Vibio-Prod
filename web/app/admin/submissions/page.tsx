@@ -5,17 +5,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Mail, Phone, Check, Inbox } from 'lucide-react';
 import { submissionsApi, type Submission } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const TYPES = ['', 'CONTACT', 'CALLBACK', 'PRODUCT_INQUIRY', 'NEWSLETTER', 'ORDER_MODIFICATION', 'SUPPORT'] as const;
-
-const TYPE_LABEL: Record<string, string> = {
-  CONTACT: 'Contact',
-  CALLBACK: 'Callback',
-  PRODUCT_INQUIRY: 'Product inquiry',
-  NEWSLETTER: 'Newsletter',
-  ORDER_MODIFICATION: 'Order change',
-  SUPPORT: 'Support',
-};
 
 const TYPE_BADGE: Record<string, string> = {
   CONTACT: 'bg-[#EAF0F4] text-[#3C5A72]',
@@ -25,8 +17,17 @@ const TYPE_BADGE: Record<string, string> = {
   ORDER_MODIFICATION: 'bg-[#FCE9E2] text-[#C9571A]',
   SUPPORT: 'bg-[#E8F0E5] text-[#273E1C]',
 };
+const TYPE_TRANSLATION: Record<string, string> = {
+  CONTACT: 'contact',
+  CALLBACK: 'callback',
+  PRODUCT_INQUIRY: 'productInquiry',
+  NEWSLETTER: 'newsletter',
+  ORDER_MODIFICATION: 'orderModification',
+  SUPPORT: 'support',
+};
 
 export default function AdminSubmissionsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [type, setType] = useState<string>('');
 
@@ -52,10 +53,10 @@ export default function AdminSubmissionsPage() {
           </div>
           <div>
             <h1 className="font-heading text-[2rem] leading-none tracking-[-0.05em] text-[#1E2519]">
-              Customer requests
+              {t('submissions.title')}
             </h1>
             <p className="mt-1 text-sm text-[#5B6455]">
-              Every contact, callback, inquiry, newsletter signup and order-change request.
+              {t('submissions.description')}
             </p>
           </div>
         </div>
@@ -69,7 +70,7 @@ export default function AdminSubmissionsPage() {
                 type === tp ? 'bg-[#273E1C] text-white' : 'bg-[#F7F4EC] text-[#5B6455] hover:bg-[#EFF5E7]'
               }`}
             >
-              {tp ? TYPE_LABEL[tp] : 'All'}
+              {tp ? t(`submissions.${TYPE_TRANSLATION[tp]}`) : t('submissions.all')}
             </button>
           ))}
         </div>
@@ -81,7 +82,7 @@ export default function AdminSubmissionsPage() {
             {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-[20px] skeleton" />)}
           </div>
         ) : items.length === 0 ? (
-          <p className="px-3 py-10 text-center text-sm text-[#5B6455]">No requests yet.</p>
+          <p className="px-3 py-10 text-center text-sm text-[#5B6455]">{t('submissions.empty')}</p>
         ) : (
           <div className="space-y-3">
             {items.map((s: Submission) => (
@@ -95,12 +96,12 @@ export default function AdminSubmissionsPage() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${TYPE_BADGE[s.type]}`}>
-                        {TYPE_LABEL[s.type] || s.type}
+                        {t(`submissions.${TYPE_TRANSLATION[s.type] || 'all'}`)}
                       </span>
                       {s.name && <span className="text-sm font-semibold text-[#1E2519]">{s.name}</span>}
                       {s.handled && (
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#2F6A37]">
-                          <Check className="h-3 w-3" /> Handled
+                          <Check className="h-3 w-3" /> {t('submissions.handled')}
                         </span>
                       )}
                     </div>
@@ -124,7 +125,7 @@ export default function AdminSubmissionsPage() {
                     disabled={toggle.isPending}
                     className="rounded-full border border-[#D8C7AD] bg-white px-4 py-2 text-xs font-semibold text-[#273E1C] transition-colors hover:border-[#C9A96E] hover:bg-[#FBF7EE] disabled:opacity-50"
                   >
-                    {s.handled ? 'Mark open' : 'Mark handled'}
+                    {s.handled ? t('submissions.markOpen') : t('submissions.markHandled')}
                   </button>
                 </div>
 
@@ -137,12 +138,12 @@ export default function AdminSubmissionsPage() {
 
                 {(s.orderId || s.meta?.productName || s.meta?.orderNumber || s.meta?.preferredTime) && (
                   <div className="mt-2 flex flex-wrap gap-3 text-xs text-[#78805F]">
-                    {s.meta?.orderNumber && <span>Order #{s.meta.orderNumber}</span>}
-                    {s.meta?.productName && <span>Product: {s.meta.productName}</span>}
-                    {s.meta?.preferredTime && <span>Preferred time: {s.meta.preferredTime}</span>}
+                    {s.meta?.orderNumber && <span>{t('submissions.order')} #{s.meta.orderNumber}</span>}
+                    {s.meta?.productName && <span>{t('submissions.product')}: {s.meta.productName}</span>}
+                    {s.meta?.preferredTime && <span>{t('submissions.preferredTime')}: {s.meta.preferredTime}</span>}
                     {s.orderId && (
                       <a href={`/admin/orders/${s.orderId}`} className="font-semibold text-[#273E1C] underline">
-                        Open order →
+                        {t('submissions.openOrder')} →
                       </a>
                     )}
                   </div>

@@ -5,6 +5,10 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { formatDate, readingTime } from '@/lib/utils';
 import { SERVER_API_URL } from '@/lib/serverApiUrl';
+import { localizeServerData } from '@/lib/i18n/server';
+import { getServerLanguage } from '@/lib/i18n/server';
+import fr from '@/lib/i18n/locales/fr.json';
+import ar from '@/lib/i18n/locales/ar.json';
 
 interface Props {
   params: { slug: string };
@@ -16,7 +20,7 @@ async function getPost(slug: string) {
       cache: 'no-store',
     });
     if (!res.ok) return null;
-    return res.json();
+    return localizeServerData(await res.json());
   } catch {
     return null;
   }
@@ -24,7 +28,7 @@ async function getPost(slug: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPost(params.slug);
-  if (!post) return { title: 'Post Not Found' };
+  if (!post) return { title: 'Article introuvable' };
   return {
     title: post.metaTitle || post.title,
     description: post.metaDesc || post.excerpt,
@@ -41,6 +45,7 @@ export const revalidate = 0;
 export default async function BlogPostPage({ params }: Props) {
   const post = await getPost(params.slug);
   if (!post) notFound();
+  const copy = (getServerLanguage() === 'ar' ? ar : fr).blog;
 
   return (
     <div className="min-h-screen bg-primary-bg pt-28">
@@ -52,7 +57,7 @@ export default async function BlogPostPage({ params }: Props) {
               className="inline-flex items-center gap-2 text-sm font-medium text-[#5B6455] transition-colors hover:text-[#1E2519]"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to journal
+              {copy.back}
             </Link>
 
             <div className="mt-6 flex flex-wrap gap-2">
@@ -72,7 +77,7 @@ export default async function BlogPostPage({ params }: Props) {
 
             <div className="mt-4 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.18em] text-[#78805F]">
               {post.publishedAt && <span>{formatDate(post.publishedAt)}</span>}
-              <span>{readingTime(post.content)} min read</span>
+              <span>{readingTime(post.content)} {copy.minRead}</span>
             </div>
 
             {post.excerpt && (

@@ -13,6 +13,7 @@ import { useCart } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { Product } from '@/types';
 import { cn, formatPrice, getDiscountPercent, getMinVariantPrice } from '@/lib/utils';
+import { localizedText } from '@/lib/i18n/localized';
 
 interface ProductCardProps {
   product: Product;
@@ -26,7 +27,7 @@ export default function ProductCard({
   index = 0,
 }: ProductCardProps) {
   const { data: session } = useSession();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { addItem } = useCart();
   const { isWishlisted, toggle } = useWishlist();
@@ -90,7 +91,7 @@ export default function ProductCard({
           {!imageLoaded && <div className="absolute inset-0 skeleton" />}
           <Image
             src={hoverImage && product.images[1] ? product.images[1] : product.images[0]}
-            alt={product.name}
+            alt={localizedText(product.name, product.name_ar, i18n.language)}
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             priority={priority}
@@ -121,11 +122,11 @@ export default function ProductCard({
 
         <div className="flex flex-1 flex-col pt-5">
           <h3 className="font-heading text-[1.6rem] leading-[1.02] tracking-[-0.045em] text-[#1E2519] transition-colors duration-200 group-hover:text-[#273E1C]">
-            {product.name}
+            {localizedText(product.name, product.name_ar, i18n.language)}
           </h3>
 
           <p className="mt-3 line-clamp-2 text-sm leading-7 text-[#5B6455]">
-            {product.shortDesc || product.description}
+            {localizedText(product.shortDesc || product.description, product.shortDesc_ar || product.description_ar, i18n.language)}
           </p>
 
           {product._count?.reviews ? (

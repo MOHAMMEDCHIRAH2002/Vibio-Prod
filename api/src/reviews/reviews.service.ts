@@ -20,7 +20,7 @@ export class ReviewsService {
       where: { isApproved: true, body: { not: null } },
       include: {
         user: { select: { name: true, image: true } },
-        product: { select: { name: true, slug: true } },
+        product: { select: { name: true, name_ar: true, slug: true } },
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
@@ -68,7 +68,7 @@ export class ReviewsService {
         take: limit,
         include: {
           user: { select: { name: true, email: true } },
-          product: { select: { name: true, slug: true } },
+          product: { select: { name: true, name_ar: true, slug: true } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -79,11 +79,29 @@ export class ReviewsService {
 
   async adminCreate(
     adminId: string,
-    data: { productId: string; rating: number; title?: string; body?: string; reviewerName?: string },
+    data: {
+      productId: string;
+      rating: number;
+      title?: string;
+      title_ar?: string;
+      body?: string;
+      body_ar?: string;
+      reviewerName?: string;
+      reviewerName_ar?: string;
+    },
   ) {
     const result = await (this.prisma.review as any).upsert({
       where: { userId_productId: { userId: adminId, productId: data.productId } },
-      update: { rating: data.rating, title: data.title, body: data.body, reviewerName: data.reviewerName, isApproved: true },
+      update: {
+        rating: data.rating,
+        title: data.title,
+        title_ar: data.title_ar,
+        body: data.body,
+        body_ar: data.body_ar,
+        reviewerName: data.reviewerName,
+        reviewerName_ar: data.reviewerName_ar,
+        isApproved: true,
+      },
       create: { ...data, userId: adminId, isApproved: true },
     });
     try { await Promise.all([

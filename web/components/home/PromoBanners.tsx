@@ -7,8 +7,11 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { bannersApi } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
+import { localizedText } from '@/lib/i18n/localized';
 
 export default function PromoBanners() {
+  const { i18n } = useTranslation();
   const { data: banners = [] } = useQuery({
     queryKey: ['banners'],
     queryFn: bannersApi.list,
@@ -46,7 +49,7 @@ export default function PromoBanners() {
           {banner.imageDesktop ? (
             <Image
               src={banner.imageDesktop}
-              alt={banner.title}
+              alt={localizedText(banner.title, banner.title_ar, i18n.language)}
               fill
               className="object-cover"
               sizes="100vw"
@@ -70,12 +73,12 @@ export default function PromoBanners() {
               >
                 {banner.title && (
                   <h2 className="font-heading text-[clamp(1.6rem,4vw,3rem)] leading-[1.05] tracking-[-0.04em] text-white drop-shadow-md">
-                    {banner.title}
+                    {localizedText(banner.title, banner.title_ar, i18n.language)}
                   </h2>
                 )}
                 {banner.subtitle && (
                   <p className="mt-2 text-sm leading-relaxed text-white/80 sm:text-base">
-                    {banner.subtitle}
+                    {localizedText(banner.subtitle, banner.subtitle_ar, i18n.language)}
                   </p>
                 )}
                 {banner.ctaLink && banner.ctaText && (

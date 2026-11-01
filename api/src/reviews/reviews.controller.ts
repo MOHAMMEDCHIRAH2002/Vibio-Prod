@@ -47,7 +47,16 @@ export class ReviewsController {
   @ApiBearerAuth()
   adminCreate(
     @CurrentUser('id') adminId: string,
-    @Body() body: { productId: string; rating: number; title?: string; body?: string; reviewerName?: string },
+    @Body() body: {
+      productId: string;
+      rating: number;
+      title?: string;
+      title_ar?: string;
+      body?: string;
+      body_ar?: string;
+      reviewerName?: string;
+      reviewerName_ar?: string;
+    },
   ) {
     return this.reviews.adminCreate(adminId, body);
   }

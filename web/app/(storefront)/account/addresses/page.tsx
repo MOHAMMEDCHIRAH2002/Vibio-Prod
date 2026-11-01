@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Edit, MapPin, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { accountApi } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 
 const emptyForm = {
   firstName: '',
@@ -33,6 +34,7 @@ const countries = [
 
 export default function AddressesPage() {
   const { data: session, status } = useSession();
+  const { t } = useTranslation();
   if (status === 'unauthenticated') redirect('/login');
 
   const queryClient = useQueryClient();
@@ -54,9 +56,9 @@ export default function AddressesPage() {
       queryClient.invalidateQueries({ queryKey: ['addresses'] });
       setShowForm(false);
       setForm(emptyForm);
-      toast.success('Address added');
+      toast.success(t('account.addressAdded'));
     },
-    onError: () => toast.error('Failed to add address'),
+    onError: () => toast.error(t('account.addressAddFailed')),
   });
 
   const updateMutation = useMutation({
@@ -66,16 +68,16 @@ export default function AddressesPage() {
       setEditId(null);
       setShowForm(false);
       setForm(emptyForm);
-      toast.success('Address updated');
+      toast.success(t('account.addressUpdated'));
     },
-    onError: () => toast.error('Failed to update address'),
+    onError: () => toast.error(t('account.addressUpdateFailed')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => accountApi.deleteAddress(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['addresses'] });
-      toast.success('Address removed');
+      toast.success(t('account.addressRemoved'));
     },
   });
 
@@ -112,9 +114,9 @@ export default function AddressesPage() {
     <div className="surface-shell p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#ECE6D9] pb-5">
         <div>
-          <p className="section-eyebrow">Addresses</p>
+          <p className="section-eyebrow">{t('account.addresses')}</p>
           <h2 className="font-heading text-[clamp(2.2rem,4vw,3.4rem)] leading-[0.98] tracking-[-0.05em] text-[#1E2519]">
-            Delivery details, curated and ready.
+            {t('account.addressesTitle')}
           </h2>
         </div>
 
@@ -127,26 +129,26 @@ export default function AddressesPage() {
           className="btn-gold"
         >
           <Plus className="h-4 w-4" />
-          Add address
+          {t('account.addAddress')}
         </button>
       </div>
 
       {showForm && (
         <div className="mt-6 surface-panel p-6">
           <h3 className="font-heading text-[1.8rem] leading-none tracking-[-0.05em] text-[#1E2519]">
-            {editId ? 'Edit address' : 'New address'}
+            {editId ? t('account.editAddress') : t('account.newAddress')}
           </h3>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             {[
-              { key: 'firstName', label: 'First name *', placeholder: 'Amira' },
-              { key: 'lastName', label: 'Last name *', placeholder: 'Khalil' },
-              { key: 'phone', label: 'Phone', placeholder: '+212 6 00 00 00 00' },
-              { key: 'address1', label: 'Address line 1 *', placeholder: '12 Rue Mohammed V' },
-              { key: 'address2', label: 'Address line 2', placeholder: 'Apt 3B' },
-              { key: 'city', label: 'City *', placeholder: 'Casablanca' },
-              { key: 'state', label: 'State / Province', placeholder: 'Grand Casablanca' },
-              { key: 'postalCode', label: 'Postal code', placeholder: '20000' },
+              { key: 'firstName', label: `${t('account.firstName')} *`, placeholder: 'Amira' },
+              { key: 'lastName', label: `${t('account.lastName')} *`, placeholder: 'Khalil' },
+              { key: 'phone', label: t('account.phone'), placeholder: '+212 6 00 00 00 00' },
+              { key: 'address1', label: `${t('checkout.addressLine1')} *`, placeholder: '12 Rue Mohammed V' },
+              { key: 'address2', label: t('checkout.addressLine2'), placeholder: 'Apt 3B' },
+              { key: 'city', label: `${t('checkout.city')} *`, placeholder: 'Casablanca' },
+              { key: 'state', label: t('account.state'), placeholder: 'Grand Casablanca' },
+              { key: 'postalCode', label: t('checkout.postalCode'), placeholder: '20000' },
             ].map(({ key, label, placeholder }) => (
               <div key={key}>
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
@@ -163,7 +165,7 @@ export default function AddressesPage() {
 
             <div>
               <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                Country *
+                {t('checkout.country')} *
               </label>
               <select
                 value={form.country}
@@ -186,7 +188,7 @@ export default function AddressesPage() {
               onChange={(event) => setForm({ ...form, isDefault: event.target.checked })}
               className="h-4 w-4 rounded border-[#D8D3C8] text-[#273E1C] focus:ring-[#389C49]"
             />
-            Set as default address
+            {t('account.setDefault')}
           </label>
 
           <div className="mt-6 flex flex-wrap gap-3">
@@ -195,7 +197,7 @@ export default function AddressesPage() {
               disabled={!form.firstName || !form.address1 || !form.city || isPending}
               className="btn-gold disabled:opacity-50"
             >
-              {isPending ? 'Saving...' : editId ? 'Update address' : 'Save address'}
+              {isPending ? t('account.saving') : editId ? t('account.updateAddress') : t('account.saveAddress')}
             </button>
             <button
               onClick={() => {
@@ -204,7 +206,7 @@ export default function AddressesPage() {
               }}
               className="btn-outline-gold"
             >
-              Cancel
+              {t('promo.cancel')}
             </button>
           </div>
         </div>
@@ -223,10 +225,10 @@ export default function AddressesPage() {
               <MapPin className="h-7 w-7" />
             </div>
             <h3 className="mt-6 font-heading text-[2.2rem] leading-none tracking-[-0.05em] text-[#1E2519]">
-              No saved addresses yet.
+              {t('account.noAddresses')}
             </h3>
             <p className="mt-4 text-sm text-[#5B6455]">
-              Add one now to make the checkout experience more seamless.
+              {t('account.addAddressDescription')}
             </p>
           </div>
         ) : (
@@ -256,7 +258,7 @@ export default function AddressesPage() {
                   {address.isDefault && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-[#EFF5E7] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#273E1C]">
                       <Check className="h-3 w-3" />
-                      Default
+                      {t('account.default')}
                     </span>
                   )}
                 </div>
@@ -267,7 +269,7 @@ export default function AddressesPage() {
                     className="inline-flex items-center gap-2 text-[#273E1C] transition-colors hover:text-[#1E2519]"
                   >
                     <Edit className="h-3.5 w-3.5" />
-                    Edit
+                    {t('account.edit')}
                   </button>
 
                   {!address.isDefault && (
@@ -276,17 +278,17 @@ export default function AddressesPage() {
                         onClick={() => setDefaultMutation.mutate(address.id)}
                         className="text-[#5B6455] transition-colors hover:text-[#273E1C]"
                       >
-                        Set default
+                        {t('account.setDefaultShort')}
                       </button>
 
                       <button
                         onClick={() => {
-                          if (confirm('Remove address?')) deleteMutation.mutate(address.id);
+                          if (confirm(t('account.removeAddressConfirm'))) deleteMutation.mutate(address.id);
                         }}
                         className="inline-flex items-center gap-2 text-[#C9571A] transition-colors hover:text-[#A6461A]"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        Remove
+                        {t('account.remove')}
                       </button>
                     </>
                   )}

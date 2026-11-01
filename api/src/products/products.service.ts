@@ -48,8 +48,11 @@ export class ProductsService {
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
+        { name_ar: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
+        { description_ar: { contains: search, mode: 'insensitive' } },
         { shortDesc: { contains: search, mode: 'insensitive' } },
+        { shortDesc_ar: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -62,9 +65,9 @@ export class ProductsService {
           skip,
           take: +limit,
           include: {
-            category: { select: { name: true, slug: true } },
+            category: { select: { name: true, name_ar: true, slug: true } },
             variants: { orderBy: { price: 'asc' } },
-            tags: { select: { name: true, slug: true } },
+            tags: { select: { name: true, name_ar: true, slug: true } },
             _count: { select: { reviews: true } },
           },
           orderBy,
@@ -74,9 +77,9 @@ export class ProductsService {
           skip,
           take: +limit,
           include: {
-            category: { select: { name: true, slug: true } },
-            variants: { take: 1, orderBy: { price: 'asc' }, select: { id: true, price: true, stock: true } },
-            tags: { select: { name: true, slug: true } },
+            category: { select: { name: true, name_ar: true, slug: true } },
+            variants: { take: 1, orderBy: { price: 'asc' }, select: { id: true, name: true, name_ar: true, value: true, value_ar: true, price: true, stock: true } },
+            tags: { select: { name: true, name_ar: true, slug: true } },
             _count: { select: { reviews: true } },
           },
           orderBy,
@@ -103,7 +106,7 @@ export class ProductsService {
       where: { isFeatured: true, isActive: true, deletedAt: null },
       take: 8,
       include: {
-        category: { select: { name: true, slug: true } },
+        category: { select: { name: true, name_ar: true, slug: true } },
         variants: { orderBy: { price: 'asc' } },
       },
     });
@@ -145,7 +148,7 @@ export class ProductsService {
   }
 
   async create(dto: CreateProductDto) {
-    const { variants, tags, ...data } = dto;
+    const { variants, tags, tags_ar: tagsAr, ...data } = dto;
 
     const product = await this.prisma.product.create({
       data: {
@@ -154,9 +157,13 @@ export class ProductsService {
         comparePrice: data.comparePrice,
         tags: tags?.length
           ? {
-              connectOrCreate: tags.map((t) => ({
+              connectOrCreate: tags.map((t, index) => ({
                 where: { slug: t.toLowerCase().replace(/\s+/g, '-') },
-                create: { name: t, slug: t.toLowerCase().replace(/\s+/g, '-') },
+                create: {
+                  name: t,
+                  name_ar: tagsAr?.[index] || null,
+                  slug: t.toLowerCase().replace(/\s+/g, '-'),
+                },
               })),
             }
           : undefined,
@@ -172,7 +179,7 @@ export class ProductsService {
   }
 
   async update(id: string, dto: Partial<CreateProductDto>) {
-    const { variants, tags, ...data } = dto;
+    const { variants, tags, tags_ar: tagsAr, ...data } = dto;
     const existing = await this.prisma.product.findFirst({
       where: { id, deletedAt: null },
       select: { slug: true },
@@ -198,9 +205,13 @@ export class ProductsService {
           tags: tags
             ? {
                 set: [],
-                connectOrCreate: tags.map((t) => ({
+                connectOrCreate: tags.map((t, index) => ({
                   where: { slug: t.toLowerCase().replace(/\s+/g, '-') },
-                  create: { name: t, slug: t.toLowerCase().replace(/\s+/g, '-') },
+                  create: {
+                    name: t,
+                    name_ar: tagsAr?.[index] || null,
+                    slug: t.toLowerCase().replace(/\s+/g, '-'),
+                  },
                 })),
               }
             : undefined,

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SERVER_API_URL } from '@/lib/serverApiUrl';
 import ProductDetailClient from './ProductDetailClient';
+import { localizeServerData } from '@/lib/i18n/server';
 
 interface Props {
   params: { slug: string };
@@ -13,7 +14,7 @@ async function getProduct(slug: string) {
     { cache: 'no-store' },
   );
   if (!res.ok) return null;
-  return res.json();
+  return localizeServerData(await res.json());
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

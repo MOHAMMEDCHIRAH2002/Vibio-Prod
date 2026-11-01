@@ -9,9 +9,10 @@ import { useTranslation } from 'react-i18next';
 import { productsApi } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
 import { toast } from 'sonner';
+import { localizedText } from '@/lib/i18n/localized';
 
 export default function AdminProductsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -137,11 +138,11 @@ export default function AdminProductsPage() {
                           <div className="flex items-center gap-3">
                             <div className="relative h-12 w-12 overflow-hidden rounded-[1rem] bg-[#F1ECE4]">
                               {product.images?.[0] && (
-                                <Image src={product.images[0]} alt={product.name} fill className="object-cover" />
+                                <Image src={product.images[0]} alt={localizedText(product.name, product.name_ar, i18n.language)} fill className="object-cover" />
                               )}
                             </div>
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-[#171C14]">{product.name}</p>
+                              <p className="truncate text-sm font-semibold text-[#171C14]">{localizedText(product.name, product.name_ar, i18n.language)}</p>
                               <div className="mt-1 flex flex-wrap items-center gap-2">
                                 {product.isFeatured && (
                                   <span className="admin-badge bg-[#F4E9D8] text-[#8A6430]">{t('admin.table.featured')}</span>

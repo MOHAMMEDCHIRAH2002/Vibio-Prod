@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Edit, Plus, Tag, Trash2, X } from 'lucide-react';
 import { promoApi } from '@/lib/api';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 type PromoType = 'PERCENTAGE' | 'FIXED' | 'FREE_SHIPPING';
 
@@ -18,12 +19,6 @@ const emptyForm = {
   startsAt: '',
   expiresAt: '',
   isActive: true,
-};
-
-const TYPE_LABEL: Record<PromoType, string> = {
-  PERCENTAGE: 'Percentage',
-  FIXED: 'Fixed amount',
-  FREE_SHIPPING: 'Free shipping',
 };
 
 function toLocalInput(value?: string | null) {
@@ -42,6 +37,7 @@ function formatValue(p: any) {
 }
 
 export default function AdminPromoPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -78,9 +74,9 @@ export default function AdminPromoPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-promo'] });
       resetForm();
-      toast.success('Promo code created');
+      toast.success(t('promo.created'));
     },
-    onError: (e: any) => toast.error(e?.message || 'Failed to create promo code'),
+    onError: (e: any) => toast.error(e?.message || t('promo.createFailed')),
   });
 
   const updateMutation = useMutation({
@@ -88,18 +84,18 @@ export default function AdminPromoPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-promo'] });
       resetForm();
-      toast.success('Promo code updated');
+      toast.success(t('promo.updated'));
     },
-    onError: (e: any) => toast.error(e?.message || 'Failed to update promo code'),
+    onError: (e: any) => toast.error(e?.message || t('promo.updateFailed')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => promoApi.adminDelete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-promo'] });
-      toast.success('Promo code removed');
+      toast.success(t('promo.removed'));
     },
-    onError: () => toast.error('Failed to remove promo code'),
+    onError: () => toast.error(t('promo.removeFailed')),
   });
 
   function resetForm() {
@@ -133,23 +129,22 @@ export default function AdminPromoPage() {
       <section className="admin-panel p-6 sm:p-7">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="admin-eyebrow">Promotions</p>
+            <p className="admin-eyebrow">{t('promo.eyebrow')}</p>
             <h1 className="mt-4 font-heading text-[clamp(2.2rem,4.5vw,4rem)] leading-[0.94] tracking-[-0.06em] text-[#171C14]">
-              Promo codes
+              {t('promo.title')}
             </h1>
             <p className="admin-subcopy mt-4 max-w-2xl">
-              Create percentage, fixed-amount, or free-shipping codes. Validation
-              (dates, usage limits, minimum order) is enforced on the server at checkout.
+              {t('promo.description')}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="admin-chip">{list.length} codes</div>
+            <div className="admin-chip">{t('promo.codes', { count: list.length })}</div>
             <button
               onClick={() => { setShowForm((v) => !v); setEditId(null); setForm(emptyForm); }}
               className="admin-btn-primary"
             >
               <Plus className="h-4 w-4" />
-              New code
+              {t('promo.new')}
             </button>
           </div>
         </div>
@@ -159,19 +154,19 @@ export default function AdminPromoPage() {
         <section className="admin-panel p-6 sm:p-7">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <p className="admin-eyebrow">{isEditing ? 'Edit entry' : 'Create entry'}</p>
+              <p className="admin-eyebrow">{isEditing ? t('promo.edit') : t('promo.createEntry')}</p>
               <h2 className="mt-3 font-heading text-[2rem] leading-none tracking-[-0.05em] text-[#171C14]">
-                {isEditing ? 'Update promo code' : 'Create promo code'}
+                {isEditing ? t('promo.update') : t('promo.create')}
               </h2>
             </div>
-            <button onClick={resetForm} className="admin-action-icon">
+            <button onClick={resetForm} aria-label={t('promo.close')} className="admin-action-icon">
               <X className="h-4 w-4" />
             </button>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="admin-label">Code *</label>
+              <label className="admin-label">{t('promo.code')}</label>
               <input
                 value={form.code}
                 onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
@@ -180,22 +175,22 @@ export default function AdminPromoPage() {
               />
             </div>
             <div>
-              <label className="admin-label">Type *</label>
+              <label className="admin-label">{t('promo.type')}</label>
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value as PromoType })}
                 className="admin-input mt-1"
               >
-                <option value="PERCENTAGE">Percentage discount</option>
-                <option value="FIXED">Fixed amount discount</option>
-                <option value="FREE_SHIPPING">Free shipping</option>
+                <option value="PERCENTAGE">{t('promo.percentage')}</option>
+                <option value="FIXED">{t('promo.fixed')}</option>
+                <option value="FREE_SHIPPING">{t('promo.freeShipping')}</option>
               </select>
             </div>
 
             {form.type !== 'FREE_SHIPPING' && (
               <div>
                 <label className="admin-label">
-                  {form.type === 'PERCENTAGE' ? 'Percentage (%) *' : 'Amount (MAD) *'}
+                  {form.type === 'PERCENTAGE' ? t('promo.percentageValue') : t('promo.amountValue')}
                 </label>
                 <input
                   type="number"
@@ -210,42 +205,42 @@ export default function AdminPromoPage() {
 
             {form.type === 'PERCENTAGE' && (
               <div>
-                <label className="admin-label">Max discount (MAD)</label>
+                <label className="admin-label">{t('promo.maxDiscount')}</label>
                 <input
                   type="number"
                   min="0"
                   value={form.maxDiscount}
                   onChange={(e) => setForm({ ...form, maxDiscount: e.target.value })}
-                  placeholder="Optional cap"
+                  placeholder={t('promo.optionalCap')}
                   className="admin-input mt-1"
                 />
               </div>
             )}
 
             <div>
-              <label className="admin-label">Minimum order (MAD)</label>
+              <label className="admin-label">{t('promo.minimumOrder')}</label>
               <input
                 type="number"
                 min="0"
                 value={form.minOrder}
                 onChange={(e) => setForm({ ...form, minOrder: e.target.value })}
-                placeholder="Optional"
+                placeholder={t('promo.optional')}
                 className="admin-input mt-1"
               />
             </div>
             <div>
-              <label className="admin-label">Usage limit</label>
+              <label className="admin-label">{t('promo.usageLimit')}</label>
               <input
                 type="number"
                 min="0"
                 value={form.maxUses}
                 onChange={(e) => setForm({ ...form, maxUses: e.target.value })}
-                placeholder="Optional (unlimited)"
+                placeholder={t('promo.optionalUnlimited')}
                 className="admin-input mt-1"
               />
             </div>
             <div>
-              <label className="admin-label">Starts at</label>
+              <label className="admin-label">{t('promo.startsAt')}</label>
               <input
                 type="datetime-local"
                 value={form.startsAt}
@@ -254,7 +249,7 @@ export default function AdminPromoPage() {
               />
             </div>
             <div>
-              <label className="admin-label">Expires at</label>
+              <label className="admin-label">{t('promo.expiresAt')}</label>
               <input
                 type="datetime-local"
                 value={form.expiresAt}
@@ -271,7 +266,7 @@ export default function AdminPromoPage() {
               onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
               className="h-4 w-4 rounded accent-[#273E1C]"
             />
-            Active
+            {t('promo.active')}
           </label>
 
           <div className="mt-5 flex flex-wrap gap-3">
@@ -280,9 +275,9 @@ export default function AdminPromoPage() {
               disabled={!canSubmit || isPending}
               className="admin-btn-primary disabled:opacity-50"
             >
-              {isPending ? 'Saving…' : isEditing ? 'Update' : 'Create'}
+              {isPending ? t('promo.saving') : isEditing ? t('promo.update') : t('promo.create')}
             </button>
-            <button onClick={resetForm} className="admin-btn-secondary">Cancel</button>
+            <button onClick={resetForm} className="admin-btn-secondary">{t('promo.cancel')}</button>
           </div>
         </section>
       )}
@@ -292,13 +287,13 @@ export default function AdminPromoPage() {
           <table className="admin-table min-w-[760px]">
             <thead>
               <tr>
-                <th>Code</th>
-                <th>Type</th>
-                <th>Value</th>
-                <th className="hidden md:table-cell">Uses</th>
-                <th className="hidden lg:table-cell">Expires</th>
-                <th>Status</th>
-                <th className="text-right">Actions</th>
+                <th>{t('promo.code')}</th>
+                <th>{t('promo.type')}</th>
+                <th>{t('promo.amountValue')}</th>
+                <th className="hidden md:table-cell">{t('promo.usageLimit')}</th>
+                <th className="hidden lg:table-cell">{t('promo.expiresAt')}</th>
+                <th>{t('promo.active')}</th>
+                <th className="text-right">{t('admin.table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -314,14 +309,14 @@ export default function AdminPromoPage() {
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-sm text-[#9E9B93]">
                     <Tag className="mx-auto mb-3 h-8 w-8 text-[#D1C7BA]" />
-                    No promo codes yet — create your first above.
+                    {t('promo.empty')}
                   </td>
                 </tr>
               ) : (
                 list.map((p) => (
                   <tr key={p.id}>
                     <td className="font-mono text-sm font-semibold text-[#171C14]">{p.code}</td>
-                    <td className="text-sm text-[#6B6A63]">{TYPE_LABEL[p.type as PromoType]}</td>
+                    <td className="text-sm text-[#6B6A63]">{t(`promo.${p.type === 'PERCENTAGE' ? 'percentage' : p.type === 'FIXED' ? 'fixed' : 'freeShipping'}`)}</td>
                     <td className="text-sm font-semibold text-[#171C14]">{formatValue(p)}</td>
                     <td className="hidden md:table-cell text-sm text-[#6B6A63]">
                       {p.usedCount}{p.maxUses != null ? ` / ${p.maxUses}` : ''}
@@ -331,16 +326,17 @@ export default function AdminPromoPage() {
                     </td>
                     <td>
                       <span className={p.isActive ? 'admin-badge bg-[#E0EEE6] text-[#2A6A45]' : 'admin-badge bg-[#ECE7E1] text-[#665E55]'}>
-                        {p.isActive ? 'Active' : 'Inactive'}
+                        {p.isActive ? t('promo.activeStatus') : t('promo.inactiveStatus')}
                       </span>
                     </td>
                     <td>
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => startEdit(p)} className="admin-action-icon">
+                        <button onClick={() => startEdit(p)} aria-label={t('promo.editAction')} className="admin-action-icon">
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => { if (confirm('Delete this promo code?')) deleteMutation.mutate(p.id); }}
+                          aria-label={t('promo.deleteAction')}
+                          onClick={() => { if (confirm(t('promo.deleteConfirm'))) deleteMutation.mutate(p.id); }}
                           className="admin-action-icon hover:!text-[#C9571A]"
                         >
                           <Trash2 className="h-4 w-4" />

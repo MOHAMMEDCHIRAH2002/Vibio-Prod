@@ -19,8 +19,16 @@ export class CreateVariantDto {
   @IsString()
   name: string;
 
+  @IsOptional()
+  @IsString()
+  name_ar?: string;
+
   @IsString()
   value: string;
+
+  @IsOptional()
+  @IsString()
+  value_ar?: string;
 
   @IsNumber()
   @IsPositive()
@@ -39,6 +47,10 @@ export class CreateProductDto {
   @IsString()
   name: string;
 
+  @IsOptional()
+  @IsString()
+  name_ar?: string;
+
   @IsString()
   slug: string;
 
@@ -47,7 +59,15 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsString()
+  description_ar?: string;
+
+  @IsOptional()
+  @IsString()
   shortDesc?: string;
+
+  @IsOptional()
+  @IsString()
+  shortDesc_ar?: string;
 
   @IsString()
   categoryId: string;
@@ -71,6 +91,11 @@ export class CreateProductDto {
   tags?: string[];
 
   @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags_ar?: string[];
+
+  @IsOptional()
   @IsBoolean()
   isFeatured?: boolean;
 
@@ -84,7 +109,15 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsString()
+  metaTitle_ar?: string;
+
+  @IsOptional()
+  @IsString()
   metaDesc?: string;
+
+  @IsOptional()
+  @IsString()
+  metaDesc_ar?: string;
 
   @IsOptional()
   @IsNumber()

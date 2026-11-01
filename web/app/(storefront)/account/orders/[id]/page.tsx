@@ -8,6 +8,7 @@ import { ArrowLeft, Check, CheckCircle } from 'lucide-react';
 import { ordersApi } from '@/lib/api';
 import { formatDate, formatPrice } from '@/lib/utils';
 import OrderModificationForm from '@/components/common/OrderModificationForm';
+import { useTranslation } from 'react-i18next';
 
 // A customer can request a change while the order is still open (not delivered,
 // cancelled, or refunded).
@@ -29,6 +30,7 @@ export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const isSuccess = searchParams.get('success') === '1';
+  const { t } = useTranslation();
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', id],
@@ -60,9 +62,9 @@ export default function OrderDetailPage() {
           <div className="flex items-start gap-4 rounded-[24px] bg-[#E3F0E3] px-5 py-5 text-[#2F6A37]">
             <CheckCircle className="mt-0.5 h-6 w-6 flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em]">Order placed successfully</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.14em]">{t('account.orderPlaced')}</p>
               <p className="mt-2 text-sm leading-7">
-                Thank you for your order. You will receive a confirmation email shortly.
+                {t('account.orderConfirmation')}
               </p>
             </div>
           </div>
@@ -76,7 +78,7 @@ export default function OrderDetailPage() {
             className="inline-flex items-center gap-2 text-sm font-medium text-[#5B6455] transition-colors hover:text-[#1E2519]"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to orders
+            {t('account.backToOrders')}
           </Link>
 
           <div className="min-w-0">
@@ -98,7 +100,7 @@ export default function OrderDetailPage() {
         {currentOrder.status !== 'CANCELLED' && currentOrder.status !== 'REFUNDED' && (
           <div className="mt-6 surface-panel p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">
-              Order progress
+              {t('account.orderProgress')}
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-3 lg:flex-nowrap">
               {STATUS_STEPS.map((step, index) => (
@@ -112,7 +114,7 @@ export default function OrderDetailPage() {
                       {index < stepIndex ? <Check className="h-4 w-4" /> : index + 1}
                     </div>
                     <span className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[#78805F]">
-                      {step.toLowerCase()}
+                      {t(`account.status.${step.toLowerCase()}`)}
                     </span>
                   </div>
 
@@ -125,7 +127,7 @@ export default function OrderDetailPage() {
 
             {currentOrder.trackingNumber && (
               <p className="mt-5 border-t border-[#ECE6D9] pt-4 text-sm text-[#5B6455]">
-                Tracking number: <span className="font-semibold text-[#1E2519]">{currentOrder.trackingNumber}</span>
+                {t('account.trackingNumber')}: <span className="font-semibold text-[#1E2519]">{currentOrder.trackingNumber}</span>
               </p>
             )}
           </div>
@@ -134,7 +136,7 @@ export default function OrderDetailPage() {
         <div className="mt-6 grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">
             <div className="surface-panel p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">Items</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">{t('account.itemsTitle')}</p>
               <div className="mt-5 space-y-4">
                 {currentOrder.items?.map((item: any) => (
                   <div key={item.id} className="flex gap-4 rounded-[22px] bg-white/70 px-4 py-4">
@@ -159,7 +161,7 @@ export default function OrderDetailPage() {
 
             <div className="surface-panel p-6">
               <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">
-                Shipping address
+                {t('checkout.shippingAddress')}
               </p>
               {currentOrder.shippingAddress && (
                 <div className="mt-4 text-sm leading-7 text-[#5B6455]">
@@ -178,26 +180,26 @@ export default function OrderDetailPage() {
           </div>
 
           <div className="surface-panel p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">Order total</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">{t('account.orderTotal')}</p>
             <div className="mt-5 space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-[#5B6455]">Subtotal</span>
+                <span className="text-[#5B6455]">{t('checkout.subtotal')}</span>
                 <span className="text-[#1E2519]">{formatPrice(currentOrder.subtotal)}</span>
               </div>
               {currentOrder.discount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-[#5B6455]">Discount</span>
+                  <span className="text-[#5B6455]">{t('checkout.discount')}</span>
                   <span className="text-[#2F6A37]">-{formatPrice(currentOrder.discount)}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-[#5B6455]">Shipping</span>
+                <span className="text-[#5B6455]">{t('checkout.shipping')}</span>
                 <span className="text-[#1E2519]">
-                  {currentOrder.shippingCost === 0 ? 'Free' : formatPrice(currentOrder.shippingCost)}
+                  {currentOrder.shippingCost === 0 ? t('checkout.free') : formatPrice(currentOrder.shippingCost)}
                 </span>
               </div>
               <div className="flex justify-between border-t border-[#ECE6D9] pt-4">
-                <span className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">Total</span>
+                <span className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">{t('checkout.total')}</span>
                 <span className="font-heading text-[1.7rem] leading-none tracking-[-0.05em] text-[#1E2519]">
                   {formatPrice(currentOrder.total)}
                 </span>

@@ -31,11 +31,15 @@ const addressSchema = z.object({
 
 type AddressForm = z.infer<typeof addressSchema>;
 
-const steps = ['Address', 'Shipping', 'Payment', 'Review'];
-
 export default function CheckoutPage() {
   const { data: session } = useSession();
   const { t } = useTranslation();
+  const steps = [
+    t('checkout.stepAddress'),
+    t('checkout.stepShipping'),
+    t('checkout.stepPayment'),
+    t('checkout.stepReview'),
+  ];
   const router = useRouter();
   const qc = useQueryClient();
   const { cart, isLoading: cartLoading } = useCart();
@@ -92,14 +96,13 @@ export default function CheckoutPage() {
                 <Lock className="h-7 w-7" />
               </div>
               <h1 className="mt-6 font-heading text-[clamp(2.6rem,5vw,4rem)] leading-[0.96] tracking-[-0.05em] text-[#1E2519]">
-                Sign in to continue.
+                {t('checkout.signInToContinue')}
               </h1>
               <p className="mx-auto mt-4 max-w-xl text-[15px] leading-8 text-[#5B6455]">
-                Checkout is available for signed-in customers so we can keep your order
-                details secure and connected to your account.
+                {t('checkout.signInDescription')}
               </p>
               <Link href="/login?redirect=/checkout" className="btn-gold mt-6">
-                Sign in
+                {t('common.signIn')}
               </Link>
             </div>
           </div>
@@ -147,7 +150,7 @@ export default function CheckoutPage() {
       toast.success(preview.message);
     } catch (error: any) {
       setAppliedPromo(null);
-      setPromoError(error?.message || 'This promo code is not valid');
+      setPromoError(error?.message || t('checkout.invalidPromo'));
     } finally {
       setPromoLoading(false);
     }
@@ -184,7 +187,7 @@ export default function CheckoutPage() {
 
       router.push(`/account/orders/${order.id}?success=1`);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to place order');
+      toast.error(error.message || t('checkout.placeOrderFailed'));
     } finally {
       setLoading(false);
     }
@@ -197,13 +200,12 @@ export default function CheckoutPage() {
           <div className="surface-shell p-6 sm:p-7 lg:p-8">
             <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
               <div>
-                <p className="section-eyebrow">Checkout</p>
+                <p className="section-eyebrow">{t('checkout.title')}</p>
                 <h1 className="max-w-[10ch] font-heading text-[clamp(3rem,6vw,5rem)] leading-[0.92] tracking-[-0.06em] text-[#1E2519]">
-                  Finish with clarity and calm.
+                  {t('checkout.headline')}
                 </h1>
                 <p className="mt-5 max-w-2xl text-[15px] leading-8 text-[#5B6455] sm:text-[16px]">
-                  The flow is now cleaner, more structured, and visually aligned with the
-                  new premium storefront direction.
+                  {t('checkout.description')}
                 </p>
               </div>
 
@@ -243,9 +245,9 @@ export default function CheckoutPage() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <p className="section-eyebrow">Step 1</p>
+                    <p className="section-eyebrow">{t('checkout.step', { number: 1 })}</p>
                     <h2 className="font-heading text-[2rem] leading-[0.98] tracking-[-0.05em] text-[#1E2519]">
-                      Shipping address
+                      {t('checkout.shippingAddress')}
                     </h2>
 
                     <form
@@ -258,14 +260,14 @@ export default function CheckoutPage() {
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                           <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                            Full name
+                            {t('checkout.fullName')}
                           </label>
                           <input {...register('fullName')} className="field-luxury" />
                           {errors.fullName && <p className="mt-2 text-xs text-[#C9571A]">{errors.fullName.message}</p>}
                         </div>
                         <div>
                           <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                            Phone
+                            {t('checkout.phone')}
                           </label>
                           <input {...register('phone')} className="field-luxury" />
                           {errors.phone && <p className="mt-2 text-xs text-[#C9571A]">{errors.phone.message}</p>}
@@ -274,7 +276,7 @@ export default function CheckoutPage() {
 
                       <div>
                         <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                          Address line 1
+                          {t('checkout.addressLine1')}
                         </label>
                         <input {...register('line1')} className="field-luxury" />
                         {errors.line1 && <p className="mt-2 text-xs text-[#C9571A]">{errors.line1.message}</p>}
@@ -282,7 +284,7 @@ export default function CheckoutPage() {
 
                       <div>
                         <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                          Address line 2
+                          {t('checkout.addressLine2')}
                         </label>
                         <input {...register('line2')} className="field-luxury" />
                       </div>
@@ -290,26 +292,26 @@ export default function CheckoutPage() {
                       <div className="grid gap-4 sm:grid-cols-3">
                         <div>
                           <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                            City
+                            {t('checkout.city')}
                           </label>
                           <input {...register('city')} className="field-luxury" />
                         </div>
                         <div>
                           <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                            Postal code
+                            {t('checkout.postalCode')}
                           </label>
                           <input {...register('postalCode')} className="field-luxury" />
                         </div>
                         <div>
                           <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                            Country
+                            {t('checkout.country')}
                           </label>
                           <input {...register('country')} defaultValue="Morocco" className="field-luxury" />
                         </div>
                       </div>
 
                       <button type="submit" className="btn-gold">
-                        Continue to shipping
+                        {t('checkout.continueShipping')}
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     </form>
@@ -324,23 +326,23 @@ export default function CheckoutPage() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <p className="section-eyebrow">Step 2</p>
+                    <p className="section-eyebrow">{t('checkout.step', { number: 2 })}</p>
                     <h2 className="font-heading text-[2rem] leading-[0.98] tracking-[-0.05em] text-[#1E2519]">
-                      Shipping method
+                      {t('checkout.shippingMethod')}
                     </h2>
 
                     <div className="mt-6 space-y-4">
                       {[
                         {
                           id: 'standard',
-                          label: 'Standard delivery',
-                          desc: '3 to 5 business days',
-                          price: cartData.subtotal > 500 ? 'Free' : '50 MAD',
+                          label: t('checkout.standardDelivery'),
+                          desc: t('checkout.standardDays'),
+                          price: cartData.subtotal > 500 ? t('checkout.free') : '50 MAD',
                         },
                         {
                           id: 'express',
-                          label: 'Express delivery',
-                          desc: '1 to 2 business days',
+                          label: t('checkout.expressDelivery'),
+                          desc: t('checkout.expressDays'),
                           price: '99 MAD',
                         },
                       ].map((method) => (
@@ -377,10 +379,10 @@ export default function CheckoutPage() {
 
                     <div className="mt-6 flex flex-wrap gap-3">
                       <button onClick={() => setStep(0)} className="btn-outline-gold">
-                        Back
+                        {t('checkout.back')}
                       </button>
                       <button onClick={() => setStep(2)} className="btn-gold">
-                        Continue
+                        {t('checkout.continue')}
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     </div>
@@ -395,23 +397,23 @@ export default function CheckoutPage() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <p className="section-eyebrow">Step 3</p>
+                    <p className="section-eyebrow">{t('checkout.step', { number: 3 })}</p>
                     <h2 className="font-heading text-[2rem] leading-[0.98] tracking-[-0.05em] text-[#1E2519]">
-                      Payment method
+                      {t('checkout.paymentMethod')}
                     </h2>
 
                     <div className="mt-6 space-y-4">
                       {[
                         {
                           id: 'cod',
-                          label: 'Cash on delivery',
-                          desc: 'Pay when your order arrives',
+                          label: t('checkout.cashOnDelivery'),
+                          desc: t('checkout.payWhenArrives'),
                           disabled: false,
                         },
                         {
                           id: 'card',
-                          label: 'Credit / debit card',
-                          desc: 'Online payment is coming soon',
+                          label: t('checkout.cardPayment'),
+                          desc: t('checkout.comingSoon'),
                           disabled: true,
                         },
                       ].map((method) => (
@@ -446,10 +448,10 @@ export default function CheckoutPage() {
 
                     <div className="mt-6 flex flex-wrap gap-3">
                       <button onClick={() => setStep(1)} className="btn-outline-gold">
-                        Back
+                        {t('checkout.back')}
                       </button>
                       <button onClick={() => setStep(3)} className="btn-gold">
-                        Review order
+                        {t('checkout.reviewOrder')}
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     </div>
@@ -464,9 +466,9 @@ export default function CheckoutPage() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <p className="section-eyebrow">Step 4</p>
+                    <p className="section-eyebrow">{t('checkout.step', { number: 4 })}</p>
                     <h2 className="font-heading text-[2rem] leading-[0.98] tracking-[-0.05em] text-[#1E2519]">
-                      Review and place order
+                      {t('checkout.reviewAndPlace')}
                     </h2>
 
                     <div className="mt-6 space-y-4">
@@ -493,7 +495,7 @@ export default function CheckoutPage() {
                     {address && (
                       <div className="mt-6 rounded-[28px] bg-[#EFF5E7] px-5 py-5">
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#273E1C]">
-                          Shipping to
+                          {t('checkout.shippingTo')}
                         </p>
                         <p className="mt-3 text-sm leading-7 text-[#273E1C]">
                           {address.fullName}, {address.line1}, {address.city}, {address.country}
@@ -503,10 +505,10 @@ export default function CheckoutPage() {
 
                     <div className="mt-6 flex flex-wrap gap-3">
                       <button onClick={() => setStep(2)} className="btn-outline-gold">
-                        Back
+                        {t('checkout.back')}
                       </button>
                       <button onClick={handlePlaceOrder} disabled={loading} className="btn-gold disabled:opacity-50">
-                        {loading ? 'Placing order...' : `Place order - ${formatPrice(total)}`}
+                        {loading ? t('checkout.placingOrder') : `${t('checkout.placeOrder')} - ${formatPrice(total)}`}
                       </button>
                     </div>
                   </motion.div>
@@ -515,7 +517,7 @@ export default function CheckoutPage() {
             </div>
 
             <div className="surface-shell h-fit p-5 sm:p-6 lg:sticky lg:top-24">
-              <p className="section-eyebrow">Summary</p>
+              <p className="section-eyebrow">{t('checkout.summary')}</p>
               <h2 className="font-heading text-[2rem] leading-[0.98] tracking-[-0.05em] text-[#1E2519]">
                 Order overview
               </h2>
@@ -542,7 +544,7 @@ export default function CheckoutPage() {
               {/* Promo code */}
               <div className="mt-6 border-t border-[#ECE6D9] pt-4">
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                  Promo code
+                  {t('checkout.promoCode')}
                 </label>
                 {appliedPromo ? (
                   <div className="flex items-center justify-between gap-3 rounded-[18px] border border-[#CBE0C3] bg-[#EFF5E7] px-4 py-3">
@@ -556,7 +558,7 @@ export default function CheckoutPage() {
                     <button
                       onClick={handleRemovePromo}
                       className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[#4F663F] transition-colors hover:bg-white/70"
-                      aria-label="Remove promo code"
+                      aria-label={t('checkout.remove')}
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -568,7 +570,7 @@ export default function CheckoutPage() {
                         value={promoInput}
                         onChange={(e) => { setPromoInput(e.target.value); setPromoError(''); }}
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyPromo(); } }}
-                        placeholder="Enter code"
+                        placeholder={t('checkout.enterCode')}
                         className="field-luxury flex-1 !py-2.5 uppercase"
                       />
                       <button
@@ -576,7 +578,7 @@ export default function CheckoutPage() {
                         disabled={promoLoading || !promoInput.trim()}
                         className="btn-outline-gold !min-h-0 !px-5 !py-2.5 disabled:opacity-50"
                       >
-                        {promoLoading ? '…' : 'Apply'}
+                        {promoLoading ? '…' : t('checkout.apply')}
                       </button>
                     </div>
                     {promoError && <p className="mt-2 text-xs text-[#C9571A]">{promoError}</p>}
@@ -661,12 +663,12 @@ export default function CheckoutPage() {
 
               <div className="mt-5 border-t border-[#ECE6D9] pt-4 space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-[#5B6455]">Subtotal</span>
+                  <span className="text-[#5B6455]">{t('checkout.subtotal')}</span>
                   <span className="text-[#1E2519]">{formatPrice(cartData.subtotal)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-[#5B6455]">Discount</span>
+                    <span className="text-[#5B6455]">{t('checkout.discount')}</span>
                     <span className="text-[#2F6A37]">-{formatPrice(discount)}</span>
                   </div>
                 )}
@@ -677,12 +679,12 @@ export default function CheckoutPage() {
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-[#5B6455]">Shipping</span>
+                  <span className="text-[#5B6455]">{t('checkout.shipping')}</span>
                   <span className="text-[#1E2519]">
                     {shippingCost === 0 ? (
                       <>
-                        {freeShipping && <span className="mr-2 text-xs text-[#2F6A37] uppercase tracking-[0.14em]">Promo</span>}
-                        Free
+                        {freeShipping && <span className="mr-2 text-xs text-[#2F6A37] uppercase tracking-[0.14em]">{t('checkout.promo')}</span>}
+                        {t('checkout.free')}
                       </>
                     ) : (
                       formatPrice(shippingCost)
@@ -690,7 +692,7 @@ export default function CheckoutPage() {
                   </span>
                 </div>
                 <div className="flex justify-between border-t border-[#ECE6D9] pt-4">
-                  <span className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1E2519]">Total</span>
+                  <span className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1E2519]">{t('checkout.total')}</span>
                   <span className="font-heading text-[1.8rem] leading-none tracking-[-0.05em] text-[#1E2519]">
                     {formatPrice(total)}
                   </span>

@@ -26,7 +26,7 @@ export default function I18nProvider({ children }: { children: React.ReactNode }
     const scope = scopeFromPath(pathname);
     const stored = getStoredLanguage(scope);
 
-    if (stored !== i18n.language) {
+    if (stored !== i18n.resolvedLanguage) {
       i18n.changeLanguage(stored).then(() => applyDocumentDirection(stored));
     } else {
       applyDocumentDirection(stored);

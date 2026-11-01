@@ -7,7 +7,9 @@ export interface CartItem {
   variantId: string;
   productId: string;
   name: string;
+  name_ar?: string | null;
   variantName: string;
+  variantName_ar?: string | null;
   slug?: string;
   price: number;
   quantity: number;
@@ -49,7 +51,7 @@ export class CartService {
       where: { id: { in: cart.items.map((item) => item.variantId) } },
       include: {
         product: {
-          select: { id: true, name: true, slug: true, images: true, isActive: true },
+          select: { id: true, name: true, name_ar: true, slug: true, images: true, isActive: true },
         },
       },
     });
@@ -63,7 +65,9 @@ export class CartService {
         ...item,
         productId: variant.productId,
         name: variant.product.name,
+        name_ar: variant.product.name_ar,
         variantName: `${variant.name}: ${variant.value}`,
+        variantName_ar: `${variant.name_ar || variant.name}: ${variant.value_ar || variant.value}`,
         slug: variant.product.slug,
         price: Number(variant.price),
         quantity: Math.min(item.quantity, variant.stock),
@@ -80,7 +84,7 @@ export class CartService {
       where: { id: variantId },
       include: {
         product: {
-          select: { name: true, slug: true, images: true, isActive: true },
+          select: { name: true, name_ar: true, slug: true, images: true, isActive: true },
         },
       },
     });
@@ -105,7 +109,9 @@ export class CartService {
         variantId,
         productId: variant.productId,
         name: variant.product.name,
+        name_ar: variant.product.name_ar,
         variantName: `${variant.name}: ${variant.value}`,
+        variantName_ar: `${variant.name_ar || variant.name}: ${variant.value_ar || variant.value}`,
         slug: variant.product.slug,
         price: Number(variant.price),
         quantity,

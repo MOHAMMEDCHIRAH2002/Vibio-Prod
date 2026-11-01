@@ -7,11 +7,12 @@ import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { categoriesApi } from '@/lib/api';
 import { toast } from 'sonner';
+import { localizedText } from '@/lib/i18n/localized';
 
-const emptyForm = { name: '', slug: '', description: '', image: '' };
+const emptyForm = { name: '', name_ar: '', slug: '', description: '', description_ar: '', image: '' };
 
 export default function AdminCategoriesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -85,8 +86,10 @@ export default function AdminCategoriesPage() {
     setEditId(category.id);
     setForm({
       name: category.name,
+      name_ar: category.name_ar || '',
       slug: category.slug,
       description: category.description || '',
+      description_ar: category.description_ar || '',
       image: category.image || '',
     });
     setShowForm(true);
@@ -137,8 +140,10 @@ export default function AdminCategoriesPage() {
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {[
               { key: 'name', label: t('admin.categoriesPage.fieldName'), placeholder: t('admin.categoriesPage.phName') },
+              { key: 'name_ar', label: `${t('admin.categoriesPage.fieldName')} (العربية)`, placeholder: 'الاسم بالعربية' },
               { key: 'slug', label: t('admin.categoriesPage.fieldSlug'), placeholder: t('admin.categoriesPage.phSlug') },
               { key: 'description', label: t('admin.categoriesPage.fieldDescription'), placeholder: t('admin.categoriesPage.phDescription') },
+              { key: 'description_ar', label: `${t('admin.categoriesPage.fieldDescription')} (العربية)`, placeholder: 'الوصف بالعربية' },
               { key: 'image', label: t('admin.categoriesPage.fieldImage'), placeholder: 'https://...' },
             ].map(({ key, label, placeholder }) => (
               <div key={key}>
@@ -188,7 +193,7 @@ export default function AdminCategoriesPage() {
               <article key={category.id} className="admin-panel overflow-hidden">
                 <div className="relative h-40 bg-[#F1ECE4]">
                   {category.image ? (
-                    <Image src={category.image} alt={category.name} fill className="object-cover" />
+                    <Image src={category.image} alt={localizedText(category.name, category.name_ar, i18n.language)} fill className="object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-sm text-[#8A867E]">
                       {t('admin.categoriesPage.noVisual')}
@@ -200,7 +205,7 @@ export default function AdminCategoriesPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h3 className="font-heading text-[1.8rem] leading-none tracking-[-0.05em] text-[#171C14]">
-                        {category.name}
+                        {localizedText(category.name, category.name_ar, i18n.language)}
                       </h3>
                       <p className="mt-2 font-mono text-xs text-[#7A776F]">{category.slug}</p>
                     </div>

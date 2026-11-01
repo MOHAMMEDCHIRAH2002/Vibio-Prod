@@ -1,5 +1,6 @@
 import { SERVER_API_URL } from '@/lib/serverApiUrl';
 import ReviewsSectionClient from './ReviewsSectionClient';
+import { localizeServerData } from '@/lib/i18n/server';
 
 async function getRecentReviews() {
   try {
@@ -8,7 +9,7 @@ async function getRecentReviews() {
       { next: { revalidate: 300 } },
     );
     if (!res.ok) return [];
-    return res.json();
+    return localizeServerData(await res.json());
   } catch {
     return [];
   }

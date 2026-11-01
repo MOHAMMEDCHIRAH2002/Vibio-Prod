@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { redirect } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -10,27 +10,31 @@ import { z } from 'zod';
 import { Bell, Lock, Shield, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { accountApi } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 
-const profileSchema = z.object({
-  name: z.string().min(2, 'Name is too short'),
-  phone: z.string().optional(),
-});
-
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, 'Required'),
-    newPassword: z.string().min(8, 'At least 8 characters'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
-
-type ProfileForm = z.infer<typeof profileSchema>;
-type PasswordForm = z.infer<typeof passwordSchema>;
+type ProfileForm = { name: string; phone?: string };
+type PasswordForm = { currentPassword: string; newPassword: string; confirmPassword: string };
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
+  const profileSchema = useMemo(
+    () => z.object({
+      name: z.string().min(2, t('account.nameTooShort')),
+      phone: z.string().optional(),
+    }),
+    [t],
+  );
+  const passwordSchema = useMemo(
+    () => z.object({
+      currentPassword: z.string().min(1, t('account.passwordRequired')),
+      newPassword: z.string().min(8, t('account.passwordLength')),
+      confirmPassword: z.string(),
+    }).refine((data) => data.newPassword === data.confirmPassword, {
+      message: t('account.passwordMismatch'),
+      path: ['confirmPassword'],
+    }),
+    [t],
+  );
   const { data: session, status, update } = useSession();
   if (status === 'unauthenticated') redirect('/login');
 
@@ -87,9 +91,9 @@ export default function SettingsPage() {
         name: updatedProfile.name,
         phone: updatedProfile.phone,
       });
-      toast.success('Profile updated');
+      toast.success(t('account.profileUpdated'));
     },
-    onError: () => toast.error('Failed to update profile'),
+    onError: () => toast.error(t('account.profileUpdateFailed')),
   });
 
   const passwordMutation = useMutation({
@@ -97,12 +101,12 @@ export default function SettingsPage() {
       accountApi.changePassword({ currentPassword, newPassword }),
     onSuccess: () => {
       resetPassword();
-      toast.success('Password changed');
+      toast.success(t('account.passwordChanged'));
     },
     onError: (error: any) => {
       const message = Array.isArray(error?.message)
         ? error.message.join(', ')
-        : error?.message || 'Unable to change password';
+        : error?.message || t('account.passwordChangeFailed');
       toast.error(message);
     },
   });
@@ -113,9 +117,9 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div className="surface-shell p-6 sm:p-7">
         <div className="border-b border-[#ECE6D9] pb-5">
-          <p className="section-eyebrow">Settings</p>
+          <p className="section-eyebrow">{t('account.settings')}</p>
           <h2 className="font-heading text-[clamp(2.2rem,4vw,3.4rem)] leading-[0.98] tracking-[-0.05em] text-[#1E2519]">
-            Keep your account details aligned.
+            {t('account.settingsTitle')}
           </h2>
         </div>
 
@@ -127,7 +131,7 @@ export default function SettingsPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">
-                  Profile information
+                  {t('account.profileInformation')}
                 </p>
               </div>
             </div>
@@ -136,29 +140,29 @@ export default function SettingsPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                    Full name
+                    {t('account.fullName')}
                   </label>
                   <input {...regProfile('name')} className={fieldClass} />
                   {profileErrors.name && <p className="mt-2 text-xs text-[#C9571A]">{profileErrors.name.message}</p>}
                 </div>
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                    Email
+                    {t('account.email')}
                   </label>
                   <input value={session?.user?.email || profile?.email || ''} type="email" readOnly className={`${fieldClass} cursor-not-allowed opacity-70`} />
-                  <p className="mt-2 text-xs text-[#78805F]">Email cannot be changed here.</p>
+                  <p className="mt-2 text-xs text-[#78805F]">{t('account.emailReadonly')}</p>
                 </div>
               </div>
 
               <div>
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                  Phone
+                  {t('account.phone')}
                 </label>
                 <input {...regProfile('phone')} type="tel" placeholder="+212 6 00 00 00 00" className={fieldClass} />
               </div>
 
               <button type="submit" disabled={profileLoading || profileMutation.isPending} className="btn-gold disabled:opacity-50">
-                {profileMutation.isPending ? 'Saving...' : 'Save changes'}
+                {profileMutation.isPending ? t('account.saving') : t('account.saveChanges')}
               </button>
             </form>
           </div>
@@ -169,14 +173,14 @@ export default function SettingsPage() {
                 <Lock className="h-4 w-4" />
               </div>
               <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1E2519]">
-                Password
+                {t('account.password')}
               </p>
             </div>
 
             <form onSubmit={handlePassword((data) => passwordMutation.mutate(data))} className="mt-5 space-y-4">
               <div>
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                  Current password
+                  {t('account.currentPassword')}
                 </label>
                 <input {...regPassword('currentPassword')} type="password" className={fieldClass} />
                 {passwordErrors.currentPassword && (
@@ -187,7 +191,7 @@ export default function SettingsPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                    New password
+                    {t('account.newPassword')}
                   </label>
                   <input {...regPassword('newPassword')} type="password" className={fieldClass} />
                   {passwordErrors.newPassword && (
@@ -196,7 +200,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#78805F]">
-                    Confirm password
+                    {t('account.confirmPassword')}
                   </label>
                   <input {...regPassword('confirmPassword')} type="password" className={fieldClass} />
                   {passwordErrors.confirmPassword && (
@@ -206,7 +210,7 @@ export default function SettingsPage() {
               </div>
 
               <button type="submit" disabled={passwordMutation.isPending} className="btn-gold disabled:opacity-50">
-                {passwordMutation.isPending ? 'Updating...' : 'Update password'}
+                {passwordMutation.isPending ? t('account.updating') : t('account.updatePassword')}
               </button>
             </form>
           </div>
@@ -260,20 +264,19 @@ export default function SettingsPage() {
                 <Shield className="h-4 w-4" />
               </div>
               <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#A6461A]">
-                Danger zone
+                {t('account.dangerZone')}
               </p>
             </div>
 
             <p className="mt-4 text-sm leading-7 text-[#A6461A]">
-              Deleting your account is permanent and removes orders, wishlist items, and
-              saved personal data from the storefront.
+              {t('account.deleteDescription')}
             </p>
 
             <button
-              onClick={() => toast.error('Please contact support to delete your account.')}
+              onClick={() => toast.error(t('account.deleteContact'))}
               className="mt-5 rounded-full border border-[#DAB9AA] px-5 py-2 text-sm font-semibold text-[#C9571A] transition-colors hover:bg-white/70"
             >
-              Delete account
+              {t('account.deleteAccount')}
             </button>
           </div>
         </div>

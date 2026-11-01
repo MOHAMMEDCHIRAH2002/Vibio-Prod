@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, Mail, MapPin, Phone, ShoppingBag } from 'lucide-react';
 import { accountApi, ordersApi } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-[#F4E5C6] text-[#8A631D]',
@@ -17,6 +18,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function CustomerDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { t, i18n } = useTranslation();
 
   const { data: customer, isLoading } = useQuery({
     queryKey: ['customer', id],
@@ -31,7 +33,11 @@ export default function CustomerDetailPage() {
   });
 
   const currentCustomer = customer as any;
-  const orders = (ordersData as any) || [];
+  const orders = Array.isArray(ordersData)
+    ? ordersData
+    : Array.isArray((ordersData as any)?.orders)
+      ? (ordersData as any).orders
+      : [];
 
   if (isLoading) {
     return (
@@ -46,9 +52,9 @@ export default function CustomerDetailPage() {
   if (!currentCustomer) {
     return (
       <div className="admin-panel admin-empty p-6">
-        <p className="text-sm">Customer not found.</p>
+        <p className="text-sm">{t('admin.customerDetail.notFound')}</p>
         <Link href="/admin/customers" className="mt-3 admin-btn-secondary">
-          Back to customers
+          {t('admin.customerDetail.back')}
         </Link>
       </div>
     );
@@ -57,19 +63,19 @@ export default function CustomerDetailPage() {
   const totalSpent = orders.reduce((sum: number, order: any) => sum + (order.total || 0), 0);
 
   return (
-    <div className="admin-page">
+    <div className="admin-page" dir={i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <section className="admin-panel p-6 sm:p-7">
         <div className="flex flex-wrap items-start gap-4">
           <Link href="/admin/customers" className="admin-action-icon">
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <p className="admin-eyebrow">Customer detail</p>
+            <p className="admin-eyebrow">{t('admin.customerDetail.detail')}</p>
             <h1 className="mt-3 font-heading text-[clamp(2.1rem,4vw,3.6rem)] leading-[0.94] tracking-[-0.06em] text-[#171C14]">
-              {currentCustomer.name || 'Unnamed customer'}
+              {currentCustomer.name || t('admin.customerDetail.unnamed')}
             </h1>
             <p className="mt-3 text-sm text-[#6B6A63]">
-              Joined {new Date(currentCustomer.createdAt).toLocaleDateString()}
+              {t('admin.customerDetail.joined')} {new Date(currentCustomer.createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -83,7 +89,7 @@ export default function CustomerDetailPage() {
                 {currentCustomer.name?.[0]?.toUpperCase() ?? '?'}
               </div>
               <h2 className="mt-4 font-heading text-[1.9rem] leading-none tracking-[-0.05em] text-[#171C14]">
-                {currentCustomer.name || 'Unnamed'}
+                {currentCustomer.name || t('admin.customerDetail.unnamed')}
               </h2>
               <span
                 className={
@@ -109,27 +115,27 @@ export default function CustomerDetailPage() {
               )}
               <div className="flex items-center gap-3">
                 <Calendar className="h-4 w-4 text-[#7A776F]" />
-                <span>Joined {new Date(currentCustomer.createdAt).toLocaleDateString()}</span>
+                <span>{t('admin.customerDetail.joined')} {new Date(currentCustomer.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
           </div>
 
           <div className="admin-panel p-6">
-            <p className="admin-eyebrow">Client value</p>
+            <p className="admin-eyebrow">{t('admin.customerDetail.clientValue')}</p>
             <h3 className="mt-3 font-heading text-[1.75rem] leading-none tracking-[-0.05em] text-[#171C14]">
-              Purchase snapshot
+              {t('admin.customerDetail.snapshot')}
             </h3>
             <div className="mt-5 space-y-4">
               <div className="flex justify-between">
-                <span className="text-sm text-[#6B6A63]">Total Orders</span>
+                <span className="text-sm text-[#6B6A63]">{t('admin.customerDetail.totalOrders')}</span>
                 <span className="font-semibold text-[#171C14]">{orders.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-[#6B6A63]">Total Spent</span>
+                <span className="text-sm text-[#6B6A63]">{t('admin.customerDetail.totalSpent')}</span>
                 <span className="font-semibold text-[#2E6049]">{formatPrice(totalSpent)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-[#6B6A63]">Avg. Order</span>
+                <span className="text-sm text-[#6B6A63]">{t('admin.customerDetail.averageOrder')}</span>
                 <span className="font-semibold text-[#171C14]">
                   {orders.length ? formatPrice(totalSpent / orders.length) : '-'}
                 </span>
@@ -139,9 +145,9 @@ export default function CustomerDetailPage() {
 
           {currentCustomer.addresses?.length > 0 && (
             <div className="admin-panel p-6">
-              <p className="admin-eyebrow">Addresses</p>
+              <p className="admin-eyebrow">{t('admin.customerDetail.addresses')}</p>
               <h3 className="mt-3 font-heading text-[1.75rem] leading-none tracking-[-0.05em] text-[#171C14]">
-                Saved locations
+                {t('admin.customerDetail.savedLocations')}
               </h3>
               <div className="mt-5 space-y-4">
                 {currentCustomer.addresses.map((address: any) => (
@@ -170,17 +176,17 @@ export default function CustomerDetailPage() {
           <div className="flex items-center gap-3">
             <ShoppingBag className="h-5 w-5 text-[#6C8349]" />
             <div>
-              <p className="admin-eyebrow">Purchase history</p>
+              <p className="admin-eyebrow">{t('admin.customerDetail.purchaseHistory')}</p>
               <h2 className="mt-2 font-heading text-[1.9rem] leading-none tracking-[-0.05em] text-[#171C14]">
-                Orders
+                {t('admin.customerDetail.orders')}
               </h2>
             </div>
-            <span className="ml-auto admin-chip">{orders.length} orders</span>
+            <span className="ml-auto admin-chip">{t('admin.customerDetail.orderCount', { count: orders.length })}</span>
           </div>
 
           {orders.length === 0 ? (
             <div className="admin-empty p-6">
-              <p className="text-sm">No orders yet.</p>
+              <p className="text-sm">{t('admin.customerDetail.noOrders')}</p>
             </div>
           ) : (
             <div className="mt-6 space-y-3">
@@ -197,11 +203,11 @@ export default function CustomerDetailPage() {
                           #{order.orderNumber || order.id.slice(0, 8).toUpperCase()}
                         </p>
                         <span className={`admin-badge ${STATUS_COLORS[order.status] || 'bg-[#ECE7E1] text-[#665E55]'}`}>
-                          {order.status}
+                          {t(`orderStatus.${order.status}`, { defaultValue: order.status })}
                         </span>
                       </div>
                       <p className="mt-2 text-xs text-[#7A776F]">
-                        {new Date(order.createdAt).toLocaleDateString()} - {order.items?.length ?? 0} items
+                        {new Date(order.createdAt).toLocaleDateString()} - {order.items?.length ?? 0} {t('admin.customerDetail.items')}
                       </p>
                     </div>
                     <span className="text-sm font-semibold text-[#171C14]">{formatPrice(order.total)}</span>

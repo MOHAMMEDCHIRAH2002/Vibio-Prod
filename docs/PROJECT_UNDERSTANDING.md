@@ -97,6 +97,19 @@ Frontend imports use `@/` relative to `web/`; API TypeScript maps `@/` to `api/s
 
 French is the i18next default, with Arabic and RTL support. Language preferences are independent: `vibio-lang` for storefront and `vibio-admin-lang` for admin. Preferences apply after mounting to keep initial server/client markup aligned. Some English strings and English root metadata remain; translation coverage is not complete.
 
+Dynamic catalog/content localization is stored alongside the existing French
+values in nullable `_ar` columns. The migration covers managed text in
+categories, products, variants, tags, order-item snapshots, reviews, banners,
+and blog posts, including SEO text and content excerpts. Identifiers, slugs,
+prices, quantities, dates, statuses, images, promo codes, loyalty ledger
+reasons, submissions, customer names, and user-entered address data remain
+unchanged because they are operational or user-owned values rather than
+translations. The frontend uses `web/lib/i18n/localized.ts` to select Arabic
+only when it is non-empty and otherwise falls back to French. The API response
+layer applies this rule to dynamic objects, server-rendered storefront fetches
+use the language cookie, and switching language invalidates React Query data.
+Admin CRUD forms preserve both languages and provide optional Arabic fields.
+
 Current Tailwind tokens use green (`#5B8A3A`), dark green (`#1F3815`), gold (`#C9A36B`) and warm cream surfaces. Heading/body fonts are Cormorant Garamond and Manrope; the root also loads Plus Jakarta Sans. Use `web/tailwind.config.ts`, `web/app/globals.css`, and existing components as the current design reference rather than copying the older context document's palette/fonts.
 
 Images use `next/image`, often through `OptimizedImage`. Remote hosts are explicitly allowed in `web/next.config.js`; new external image hosts require configuration. Physical-store details are centralized in `web/lib/storeConfig.ts` and consumed by store/contact components, with environment overrides and placeholder fallbacks.
