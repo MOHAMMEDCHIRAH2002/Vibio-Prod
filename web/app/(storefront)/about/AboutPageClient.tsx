@@ -41,8 +41,8 @@ export default function AboutPageClient() {
               {/* LEFT VISUAL */}
               <div className="relative min-h-[560px] overflow-hidden rounded-[34px] border border-[#DCCBAE] bg-[#F5F0E7] shadow-[0_28px_90px_rgba(30,37,25,0.09)]">
                 <Image
-                  src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=1400&q=85"
-                  alt="Premium tea ritual with natural ingredients"
+                  src="/about/interieur.jpg"
+                  alt="Vibio boutique interior"
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 44vw"
@@ -134,8 +134,8 @@ export default function AboutPageClient() {
               <div className="card-luxury relative min-h-[390px] overflow-hidden p-4 sm:col-span-2">
                 <div className="relative h-full overflow-hidden rounded-[30px]">
                   <Image
-                    src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1400&q=85"
-                    alt="Coffee and tea served as a refined ritual"
+                    src="/about/productssim.jpg"
+                    alt="Vibio products"
                     fill
                     sizes="(max-width: 1024px) 100vw, 48vw"
                     className="object-cover"
@@ -156,8 +156,8 @@ export default function AboutPageClient() {
               <div className="surface-panel relative min-h-[245px] overflow-hidden p-4">
                 <div className="relative h-full overflow-hidden rounded-[28px] bg-[#F5F0E7]">
                   <Image
-                    src="/accessoires/la-theiere-.jpg"
-                    alt="Vibio artisanal tea accessory"
+                    src="/about/external.jpg"
+                    alt="Vibio boutique exterior"
                     fill
                     sizes="360px"
                     className="object-contain p-7"
@@ -227,8 +227,8 @@ export default function AboutPageClient() {
             <div className="grid lg:grid-cols-[0.92fr_1.08fr]">
               <div className="relative min-h-[360px] bg-[#F5F0E7]">
                 <Image
-                  src="https://images.unsplash.com/photo-1597318181409-cf64d0b5d8a2?w=1400&q=85"
-                  alt="Premium natural products and ingredients"
+                  src="/about/interieur.jpg"
+                  alt="Vibio boutique interior"
                   fill
                   sizes="(max-width: 1024px) 100vw, 45vw"
                   className="object-cover"

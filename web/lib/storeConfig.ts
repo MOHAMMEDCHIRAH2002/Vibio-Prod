@@ -37,7 +37,7 @@ export interface StoreConfig {
   hours: OpeningHour[];
 }
 
-const phone = env('NEXT_PUBLIC_STORE_PHONE_NUMBER', '+212 600 000 000');
+const phone = env('NEXT_PUBLIC_STORE_PHONE_NUMBER', '+212 708-073308');
 const whatsapp = env('NEXT_PUBLIC_STORE_WHATSAPP_NUMBER', phone);
 const address = env(
   'NEXT_PUBLIC_STORE_ADDRESS',
@@ -70,7 +70,7 @@ export const storeConfig: StoreConfig = {
   ),
   mapLinkUrl: env(
     'NEXT_PUBLIC_STORE_MAP_LINK',
-    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`,
+    'https://share.google/uPk4izGvgzIUmQuX3',
   ),
   photos: photoUrls.map((src, i) => ({ src, alt: `Vibio store ${i + 1}` })),
   hours: [
@@ -78,6 +78,12 @@ export const storeConfig: StoreConfig = {
     { key: 'saturday', open: '10:00', close: '18:00' },
     { key: 'sunday', closed: true },
   ],
+};
+
+export const socialLinks = {
+  instagram: 'https://www.instagram.com/vibio.ma?utm_source=qr&dlrf=OWU0dno0ZDk4aTg2',
+  facebook: 'https://www.facebook.com/profile.php?id=61595035324898',
+  tiktok: 'https://www.tiktok.com/@vibio.ma',
 };
 
 export const telHref = `tel:${digits(storeConfig.phone) ? '+' + digits(storeConfig.phone) : ''}`;

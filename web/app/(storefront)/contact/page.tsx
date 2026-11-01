@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import VisitStoreCTA from '@/components/store/VisitStoreCTA';
 import CallbackForm from '@/components/common/CallbackForm';
 import { submissionsApi } from '@/lib/api';
+import { storeConfig } from '@/lib/storeConfig';
 
 type Form = {
   name: string;
@@ -103,13 +104,13 @@ export default function ContactPage() {
                   {
                     icon: Phone,
                     title: t('contact.callUs'),
-                    content: '+212 6 00 00 00 00',
+                    content: storeConfig.phone,
                     sub: t('contact.callSub'),
                   },
                   {
                     icon: MapPin,
                     title: t('contact.visitTitle'),
-                    content: 'Casablanca, Morocco',
+                    content: `${storeConfig.city}, ${storeConfig.country}`,
                     sub: t('contact.visitSub'),
                   },
                 ].map(({ icon: Icon, title, content, sub }) => (
