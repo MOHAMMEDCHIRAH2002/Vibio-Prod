@@ -122,7 +122,7 @@ export default function HeroSection() {
   };
 
   const dynamicCarouselProducts = useMemo(() => {
-    const products = productsData?.products || [];
+    const products = productsData?.data || [];
     const usedCategoryIds = new Set<string>();
 
     return products
