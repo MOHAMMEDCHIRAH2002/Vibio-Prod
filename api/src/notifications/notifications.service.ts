@@ -70,13 +70,13 @@ export interface AdminRequestNotification {
 }
 
 const TYPE_META: Record<AdminRequestType, { emoji: string; badge: string }> = {
-  order: { emoji: '🛍️', badge: 'NEW ORDER' },
-  order_modification: { emoji: '✏️', badge: 'ORDER CHANGE REQUEST' },
-  contact: { emoji: '✉️', badge: 'CONTACT FORM' },
-  callback: { emoji: '📞', badge: 'CALLBACK REQUEST' },
-  product_inquiry: { emoji: '❓', badge: 'PRODUCT INQUIRY' },
-  newsletter: { emoji: '📰', badge: 'NEWSLETTER SIGNUP' },
-  support: { emoji: '🛟', badge: 'SUPPORT REQUEST' },
+  order: { emoji: '🛍️', badge: 'NOUVELLE COMMANDE' },
+  order_modification: { emoji: '✏️', badge: 'DEMANDE DE MODIFICATION' },
+  contact: { emoji: '✉️', badge: 'FORMULAIRE DE CONTACT' },
+  callback: { emoji: '📞', badge: 'DEMANDE DE RAPPEL' },
+  product_inquiry: { emoji: '❓', badge: 'QUESTION PRODUIT' },
+  newsletter: { emoji: '📰', badge: 'INSCRIPTION NEWSLETTER' },
+  support: { emoji: '🛟', badge: 'DEMANDE D’ASSISTANCE' },
 };
 
 @Injectable()
@@ -190,7 +190,7 @@ export class NotificationsService {
   async sendWelcome(email: string, name: string): Promise<EmailOutcome> {
     return this.sendEmail({
       to: email,
-      subject: `Welcome to Vibio, ${name}! ✨`,
+      subject: `Bienvenue chez Vibio, ${name} ! ✨`,
       html: this.welcomeTemplate(name),
       context: 'welcome',
     });
@@ -206,7 +206,7 @@ export class NotificationsService {
   }): Promise<EmailOutcome> {
     return this.sendEmail({
       to: email,
-      subject: `Your order #${data.orderNumber} is confirmed ✨`,
+      subject: `Votre commande n°${data.orderNumber} est confirmée ✨`,
       html: this.orderConfirmationTemplate(data),
       context: `order confirmation: Order #${data.orderNumber}`,
     });
@@ -220,7 +220,7 @@ export class NotificationsService {
   }): Promise<EmailOutcome> {
     return this.sendEmail({
       to: email,
-      subject: `Your order is on its way! 🚚`,
+      subject: `Votre commande est en route ! 🚚`,
       html: this.shippingUpdateTemplate(data),
       context: `shipping update: Order #${data.orderNumber}`,
     });
@@ -309,19 +309,19 @@ export class NotificationsService {
       .filter(Boolean)
       .join(', ');
     const summary: { label: string; value: string }[] = [
-      { label: 'Subtotal', value: `${data.subtotal.toFixed(2)} MAD` },
+      { label: 'Sous-total', value: `${data.subtotal.toFixed(2)} MAD` },
     ];
-    if (data.discount > 0) summary.push({ label: 'Promo discount', value: `-${data.discount.toFixed(2)} MAD` });
-    if (data.loyaltyDiscount > 0) summary.push({ label: 'Loyalty discount', value: `-${data.loyaltyDiscount.toFixed(2)} MAD` });
-    summary.push({ label: 'Shipping', value: `${data.shippingCost.toFixed(2)} MAD` });
+    if (data.discount > 0) summary.push({ label: 'Réduction promotionnelle', value: `-${data.discount.toFixed(2)} MAD` });
+    if (data.loyaltyDiscount > 0) summary.push({ label: 'Réduction fidélité', value: `-${data.loyaltyDiscount.toFixed(2)} MAD` });
+    summary.push({ label: 'Livraison', value: `${data.shippingCost.toFixed(2)} MAD` });
     summary.push({ label: 'Total', value: `${data.total.toFixed(2)} MAD` });
-    summary.push({ label: 'Payment', value: `${data.paymentMethod} (${data.paymentStatus})` });
-    summary.push({ label: 'Order status', value: data.status });
-    summary.push({ label: 'Delivery address', value: address || '—' });
+    summary.push({ label: 'Paiement', value: `${data.paymentMethod} (${data.paymentStatus})` });
+    summary.push({ label: 'Statut de la commande', value: data.status });
+    summary.push({ label: 'Adresse de livraison', value: address || '—' });
 
     return this.notifyAdmin({
       type: 'order',
-      title: data.pendingPayment ? 'Pending-payment order' : 'New order',
+      title: data.pendingPayment ? 'Commande en attente de paiement' : 'Nouvelle commande',
       customerName: data.customerName,
       customerEmail: data.customerEmail,
       customerPhone: data.customerPhone,
@@ -352,7 +352,7 @@ export class NotificationsService {
   async sendPasswordReset(email: string, name: string, resetUrl: string): Promise<EmailOutcome> {
     return this.sendEmail({
       to: email,
-      subject: 'Reset your Vibio password',
+      subject: 'Réinitialisez votre mot de passe Vibio',
       html: this.passwordResetTemplate(name, resetUrl),
       context: 'password reset',
     });
@@ -375,13 +375,13 @@ export class NotificationsService {
     </style></head>
     <body>
       <div class="container">
-        <div class="header"><h1>VIBIO</h1></div>
+        <div class="header"><img src="${this.logoUrl()}" width="180" alt="Vibio"></div>
         <div class="body">
-          <h2>Welcome, ${name}! ✨</h2>
-          <p>Thank you for joining Vibio. Discover our curated selection of premium natural products, crafted to bring luxury into your everyday life.</p>
-          <p><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}" class="btn">Shop Now</a></p>
+          <h2>Bienvenue, ${name} ! ✨</h2>
+          <p>Merci d'avoir rejoint Vibio. Découvrez notre sélection de produits naturels haut de gamme, imaginés pour apporter une touche de luxe à votre quotidien.</p>
+          <p><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}" class="btn">Découvrir la boutique</a></p>
         </div>
-        <div class="footer">© 2024 Vibio. Nature's Finest, Crafted for You.</div>
+        <div class="footer">© 2026 Vibio. Le meilleur de la nature, pensé pour vous.</div>
       </div>
     </body>
     </html>`;
@@ -416,11 +416,11 @@ export class NotificationsService {
     </style></head>
     <body>
       <div class="container">
-        <div class="header"><h1>VIBIO</h1></div>
+        <div class="header"><img src="${this.logoUrl()}" width="180" alt="Vibio"></div>
         <div class="body">
-          <h2 style="color:#1C1C1C;">Order Confirmed! ✨</h2>
-          <p style="color:#6B6560;">Hi ${data.name}, your order has been received.</p>
-          <div class="order-number">Order <span>#${data.orderNumber}</span></div>
+          <h2 style="color:#1C1C1C;">Commande confirmée ! ✨</h2>
+          <p style="color:#6B6560;">Bonjour ${data.name}, votre commande a bien été reçue.</p>
+          <div class="order-number">Commande <span>#${data.orderNumber}</span></div>
           <table>
             ${itemsHtml}
             <tr class="total-row">
@@ -428,10 +428,10 @@ export class NotificationsService {
               <td style="padding: 16px; text-align:right;">${data.total.toFixed(2)} MAD</td>
             </tr>
           </table>
-          <h3 style="color:#1C1C1C; margin-top: 32px;">Shipping to:</h3>
+          <h3 style="color:#1C1C1C; margin-top: 32px;">Livraison à :</h3>
           <p style="color:#6B6560;">${data.shippingAddress?.fullName}<br>${data.shippingAddress?.line1}<br>${data.shippingAddress?.city}, ${data.shippingAddress?.country}</p>
         </div>
-        <div class="footer">© 2024 Vibio. Nature's Finest, Crafted for You.</div>
+        <div class="footer">© 2026 Vibio. Le meilleur de la nature, pensé pour vous.</div>
       </div>
     </body>
     </html>`;
@@ -439,6 +439,11 @@ export class NotificationsService {
 
   private esc(v: string): string {
     return String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
+  }
+
+  private logoUrl(): string {
+    const siteUrl = this.config.get<string>('NEXT_PUBLIC_SITE_URL') || 'http://localhost:3000';
+    return `${siteUrl.replace(/\/$/, '')}/VIBIO-LOGO.png`;
   }
 
   /** Unified admin email for ANY customer request. */
@@ -488,23 +493,23 @@ export class NotificationsService {
     </style></head>
     <body>
       <div class="container">
-        <div class="header"><h1>VIBIO · ADMIN</h1><p>Store notification</p></div>
+        <div class="header"><img src="${this.logoUrl()}" width="160" alt="Vibio"><p>Notification de la boutique</p></div>
         <div class="body">
           <span class="pill">${meta.emoji} ${meta.badge}</span>
           <div class="title">${this.esc(r.title)}</div>
           ${r.related ? `<p class="ref">${this.esc(r.related)}</p>` : '<div style="height:10px"></div>'}
 
-          ${contact ? `<p class="label">Customer</p><div class="card">${contact}</div>` : ''}
+          ${contact ? `<p class="label">Client</p><div class="card">${contact}</div>` : ''}
           ${r.message ? `<p class="label">Message</p><div class="card">${this.esc(r.message).replace(/\n/g, '<br>')}</div>` : ''}
-          ${linesHtml ? `<p class="label">Details</p>${linesHtml}` : ''}
+          ${linesHtml ? `<p class="label">Détails</p>${linesHtml}` : ''}
           ${summaryHtml}
 
-          <p class="label" style="margin-top:22px;">Received</p>
+          <p class="label" style="margin-top:22px;">Reçu le</p>
           <div class="card">🕒 ${this.esc(when)}</div>
 
-          ${r.adminUrl ? `<p style="text-align:center;margin:26px 0 8px;"><a href="${r.adminUrl}" class="btn">Open in admin →</a></p>` : ''}
+          ${r.adminUrl ? `<p style="text-align:center;margin:26px 0 8px;"><a href="${r.adminUrl}" class="btn">Ouvrir dans l'administration →</a></p>` : ''}
         </div>
-        <div class="footer">Vibio store notifications · automated message</div>
+        <div class="footer">Notifications de la boutique Vibio · message automatiquee</div>
       </div>
     </body>
     </html>`;
@@ -528,19 +533,19 @@ export class NotificationsService {
     </style></head>
     <body>
       <div class="container">
-        <div class="header"><h1>VIBIO</h1></div>
+        <div class="header"><img src="${this.logoUrl()}" width="180" alt="Vibio"></div>
         <div class="body">
-          <h2>Reset your password</h2>
-          <p>Hi ${name},</p>
-          <p>We received a request to reset the password for your Vibio account. Click the button below to choose a new password. This link expires in <strong>1 hour</strong>.</p>
+          <h2>Réinitialisez votre mot de passe</h2>
+          <p>Bonjour ${name},</p>
+          <p>Nous avons reçu une demande de réinitialisation du mot de passe de votre compte Vibio. Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe. Ce lien expire dans <strong>1 heure</strong>.</p>
           <p style="text-align:center; margin: 32px 0;">
-            <a href="${resetUrl}" class="btn">Reset password</a>
+            <a href="${resetUrl}" class="btn">Réinitialiser le mot de passe</a>
           </p>
           <div class="notice">
-            If you didn't request a password reset, you can safely ignore this email — your account is still secure and your password has not been changed.
+            Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail : votre compte reste sécurisé et votre mot de passe n'a pas été modifié.
           </div>
         </div>
-        <div class="footer">© 2024 Vibio. Nature's Finest, Crafted for You.</div>
+        <div class="footer">© 2026 Vibio. Le meilleur de la nature, pensé pour vous.</div>
       </div>
     </body>
     </html>`;
@@ -563,16 +568,16 @@ export class NotificationsService {
     </style></head>
     <body>
       <div class="container">
-        <div class="header"><h1>VIBIO</h1></div>
+        <div class="header"><img src="${this.logoUrl()}" width="180" alt="Vibio"></div>
         <div class="body">
-          <h2 style="color:#1C1C1C;">Your Order is on its Way! 🚚</h2>
-          <p style="color:#6B6560;">Hi ${data.name}, order <strong>#${data.orderNumber}</strong> has been shipped.</p>
+          <h2 style="color:#1C1C1C;">Votre commande est en route ! 🚚</h2>
+          <p style="color:#6B6560;">Bonjour ${data.name}, la commande <strong>#${data.orderNumber}</strong> a été expédiée.</p>
           <div class="tracking">
-            <h3>Tracking Number</h3>
+            <h3>Numéro de suivi</h3>
             <code>${data.trackingNumber}</code>
           </div>
         </div>
-        <div class="footer">© 2024 Vibio. Nature's Finest, Crafted for You.</div>
+        <div class="footer">© 2026 Vibio. Le meilleur de la nature, pensé pour vous.</div>
       </div>
     </body>
     </html>`;

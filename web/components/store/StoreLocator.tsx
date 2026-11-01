@@ -27,19 +27,19 @@ export default function StoreLocator() {
 
       {/* Gallery */}
       {s.photos.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
           {s.photos.slice(0, 4).map((photo, i) => (
             <div
               key={photo.src}
-              className={`group relative overflow-hidden rounded-[28px] border border-[#E7DDCC] bg-[#F4F0E5] ${
-                i === 0 ? 'sm:col-span-2 sm:row-span-2 aspect-[4/3] sm:aspect-auto' : 'aspect-[4/3]'
+              className={`group relative min-h-[300px] overflow-hidden rounded-[28px] border border-[#E7DDCC] bg-[#F4F0E5] ${
+              i === 0 ? 'sm:col-span-2 aspect-[16/8] lg:min-h-[430px]' : 'aspect-[4/3] lg:min-h-[340px]'
               }`}
             >
               <Image
                 src={photo.src}
                 alt={photo.alt}
                 fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 50vw"
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
               />
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(30,37,25,0)_55%,rgba(30,37,25,0.28))] mix-blend-multiply" />

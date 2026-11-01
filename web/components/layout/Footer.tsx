@@ -26,10 +26,6 @@ const SOCIAL = [
 ];
 import BrandLogo from '@/components/common/BrandLogo';
 
-const staticShopLinks = [
-  { href: '/gifts', key: 'footer.links.giftBoxes' },
-];
-
 const companyLinks = [
   { href: '/about', key: 'footer.links.ourStory' },
   { href: '/blog', key: 'footer.links.journal' },
@@ -53,15 +49,12 @@ export default function Footer() {
     refetchOnWindowFocus: true,
     refetchInterval: 60_000,
   });
-  const shopLinks = [
-    ...staticShopLinks,
-    ...(categories ?? []).flatMap((category) =>
+  const shopLinks = (categories ?? []).flatMap((category) =>
       [category, ...(category.children ?? [])].map((item) => ({
         href: `/shop/${encodeURIComponent(item.slug)}`,
         key: item.name,
       })),
-    ),
-  ];
+    );
   return (
     <footer className="px-4 pb-6 pt-8 sm:px-6 lg:px-8 lg:pt-10">
       <div className="mx-auto max-w-[1540px]">

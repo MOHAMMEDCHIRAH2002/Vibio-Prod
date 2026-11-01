@@ -69,7 +69,7 @@ export const storeConfig: StoreConfig = {
   ),
   mapLinkUrl: env(
     'NEXT_PUBLIC_STORE_MAP_LINK',
-    'https://maps.app.goo.gl/STMRMpCMYqcCQU6c8',
+    'https://maps.app.goo.gl/tiqMJDMDgcHqiazB7',
   ),
   photos: photoUrls.map((src, i) => ({ src, alt: `Vibio store ${i + 1}` })),
   hours: [
