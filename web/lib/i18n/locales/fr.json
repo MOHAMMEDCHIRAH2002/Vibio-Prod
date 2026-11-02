@@ -1121,6 +1121,46 @@
       "updateFailed": "Échec de la mise à jour de la catégorie"
     }
   },
+  "legal": {
+    "updated": "Dernière mise à jour : avril 2026",
+    "terms": {
+      "eyebrow": "Juridique",
+      "title": "Conditions de vente",
+      "intro": "Ces conditions expliquent les règles applicables lorsque vous consultez la boutique Vibio, créez un compte ou passez une commande.",
+      "sections": {
+        "storefront": { "title": "Utilisation de la boutique", "body": "En naviguant sur vibio.ma ou en y achetant un produit, vous acceptez ces conditions. Vous devez avoir au moins 18 ans pour commander. Vos identifiants sont personnels et ne doivent pas être partagés." },
+        "orders": { "title": "Commandes et prix", "body": "Les prix sont affichés en MAD et incluent la TVA applicable, sauf indication contraire. Nous pouvons corriger une erreur de prix ou annuler une commande si un produit est indisponible ; tout paiement est alors intégralement remboursé." },
+        "shipping": { "title": "Expédition et livraison", "body": "Les commandes sont expédiées depuis Casablanca. Les délais indiqués au paiement sont estimatifs. Le risque est transféré lors de la livraison à l’adresse fournie." },
+        "intellectualProperty": { "title": "Propriété intellectuelle", "body": "Les photos, textes, logos et éléments graphiques de vibio.ma appartiennent à Vibio ou à ses partenaires. Toute reproduction nécessite une autorisation écrite." },
+        "liability": { "title": "Responsabilité", "body": "Vibio ne peut être tenue responsable des préjudices indirects liés à l’utilisation de la boutique. Ces conditions ne limitent pas vos droits légaux de consommateur." }
+      }
+    },
+    "privacy": {
+      "eyebrow": "Juridique",
+      "title": "Politique de confidentialité",
+      "intro": "Vibio traite vos données avec le même soin que ses produits. Cette politique précise les données collectées, leur usage et le contrôle dont vous disposez.",
+      "sections": {
+        "collect": { "title": "Données collectées", "body": "Lors d’un compte, d’une commande ou d’une inscription à la newsletter, nous collectons les informations fournies : nom, e-mail, adresse de livraison et historique des commandes. Des données techniques limitées peuvent aussi être collectées." },
+        "use": { "title": "Utilisation des données", "body": "Vos données servent à traiter les commandes, livrer les colis, répondre à vos demandes et envoyer les communications auxquelles vous avez consenti. Les statistiques nous aident à améliorer la boutique." },
+        "sharing": { "title": "Partage", "body": "Nous partageons uniquement les données nécessaires avec les prestataires de paiement, transporteurs et services d’e-mail. Nous ne vendons pas vos données personnelles." },
+        "rights": { "title": "Vos droits", "body": "Vous pouvez consulter, corriger ou supprimer vos données depuis votre compte ou en écrivant à contact@vibio.ma. Les demandes sont traitées sous 30 jours." },
+        "cookies": { "title": "Cookies", "body": "Les cookies essentiels maintiennent votre session et votre panier. Les cookies facultatifs servent aux statistiques et peuvent être désactivés dans les préférences de votre navigateur." }
+      }
+    },
+    "returns": {
+      "eyebrow": "Service client",
+      "title": "Retours et remboursements",
+      "intro": "Nous voulons que chaque commande vous convienne. Si un article ne correspond pas à vos attentes, voici la procédure à suivre.",
+      "steps": {
+        "request": { "title": "Demander sous 14 jours", "body": "Écrivez à contact@vibio.ma depuis l’adresse de votre commande dans les 14 jours suivant la livraison, avec votre numéro de commande et une brève explication." },
+        "prepare": { "title": "Préparer le colis", "body": "Retournez les articles dans leur emballage d’origine, inutilisés et scellés si nécessaire. Les produits alimentaires ne sont repris que s’ils sont endommagés ou défectueux à l’arrivée." },
+        "ship": { "title": "Renvoyer le colis", "body": "Nous fournissons une étiquette prépayée pour les retours nationaux. Les retours internationaux sont à la charge du client, sauf erreur ou dommage." },
+        "refund": { "title": "Remboursement sous 7 jours", "body": "Après réception et contrôle, le remboursement est effectué sur le moyen de paiement d’origine sous sept jours ouvrés. Une confirmation vous est envoyée par e-mail." }
+      },
+      "helpTitle": "Besoin d’aide ?",
+      "helpText": "Notre équipe répond aux questions sur les retours sous un jour ouvré. Écrivez-nous avec votre numéro de commande et des photos si le colis est endommagé."
+    }
+  },
   "footer": {
     "taglineA": "Rituels naturels,",
     "taglineB": "luxe moderne.",

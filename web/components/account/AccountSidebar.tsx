@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { Gift, Home, LogOut, Package, Settings } from 'lucide-react';
+import { ChevronDown, Gift, Home, LogOut, Package, Settings } from 'lucide-react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +12,7 @@ export default function AccountSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { t, i18n } = useTranslation();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const navItems = [
     { href: '/account', label: t('account.overview'), icon: Home, match: (path: string) => path === '/account' },
     {
@@ -36,10 +38,42 @@ export default function AccountSidebar() {
   const source = session?.user?.name || session?.user?.email || t('account.member');
   const initials = source.slice(0, 1).toUpperCase();
 
+  const activeItem = navItems.find((item) => item.match(pathname));
+
   return (
-    <aside
+    <>
+      <div dir={i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'} className="relative lg:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileOpen((open) => !open)}
+          aria-expanded={mobileOpen}
+          className="flex min-h-12 w-full items-center justify-between rounded-2xl border border-[#E8E2D9] bg-white px-4 text-sm font-semibold text-[#273E1C] shadow-sm"
+        >
+          <span>{activeItem?.label || t('account.overview')}</span>
+          <ChevronDown className={cn('h-4 w-4 transition-transform duration-200', mobileOpen && 'rotate-180')} />
+        </button>
+        {mobileOpen && (
+          <nav className="mt-2 rounded-2xl border border-[#E8E2D9] bg-white p-2 shadow-[0_16px_40px_rgba(30,37,25,0.1)]">
+            {navItems.map(({ href, label, icon: Icon, match }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  'flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition-colors',
+                  match(pathname) ? 'bg-[#273E1C] text-white' : 'text-[#5B6455] hover:bg-[#EFF5E7]',
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+              </Link>
+            ))}
+          </nav>
+        )}
+      </div>
+      <aside
       dir={i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'}
-      className="surface-shell sticky top-24 h-fit p-4 text-start sm:p-5"
+      className="surface-shell sticky top-24 hidden h-fit p-4 text-start sm:p-5 lg:block"
     >
       <div className="surface-panel px-5 py-5">
         <div className="flex items-center gap-4">
@@ -87,6 +121,7 @@ export default function AccountSidebar() {
         <LogOut className="h-4 w-4" />
         {t('account.signOut')}
       </button>
-    </aside>
+      </aside>
+    </>
   );
 }

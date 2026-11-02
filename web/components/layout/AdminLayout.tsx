@@ -358,7 +358,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         >
           <div className="mx-auto max-w-[1600px]">
             <header className="admin-topbar px-4 py-4 sm:px-5 lg:px-6">
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex min-w-0 flex-wrap items-center gap-3">
                 <button
                   onClick={() => setSidebarOpen(true)}
                   className="admin-action-icon lg:hidden"
@@ -376,13 +376,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 <div className="min-w-0">
                   <p className="admin-eyebrow">{t('admin.administration')}</p>
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-[#6B7360]">
+                  <div className="mt-2 flex min-w-0 max-w-full flex-wrap items-center gap-2 overflow-hidden text-sm text-[#6B7360]">
                     {breadcrumbSegments.map((segment, index) => (
                       <span key={`${segment}-${index}`} className="flex items-center gap-2">
                         {index > 0 && <ChevronRight className="h-3.5 w-3.5 text-[#A59A8C]" />}
                         <span
                           className={cn(
-                            'capitalize',
+                            'max-w-[12rem] truncate capitalize sm:max-w-[20rem]',
                             index === breadcrumbSegments.length - 1 && 'font-semibold text-[#171C14]',
                           )}
                         >
@@ -393,10 +393,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </div>
                 </div>
 
-                <div className="ml-auto flex flex-wrap items-center gap-2">
+                <div className="ml-auto flex min-w-0 flex-wrap items-center gap-2">
                   <LanguageSwitcher variant="light" />
-                  <div className="admin-chip ltr-nums">{dateLabel}</div>
-                  <Link href="/" target="_blank" className="admin-btn-secondary !min-h-[2.7rem] !px-4">
+                  <div className="admin-chip ltr-nums hidden sm:block">{dateLabel}</div>
+                  <Link href="/" target="_blank" className="admin-btn-secondary !min-h-[2.7rem] !px-3 sm:!px-4">
                     {t('admin.viewStore')}
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Link>

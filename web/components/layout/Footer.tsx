@@ -163,7 +163,7 @@ export default function Footer() {
 
                 <div className="mt-7 space-y-4">
                   {[
-                    { icon: Mail, label: 'hello@vibio.com' },
+                    { icon: Mail, label: 'contact@vibio.ma' },
                     { icon: Phone, label: storeConfig.phone },
                     { icon: MapPin, label: `${storeConfig.city}, ${storeConfig.country}` },
                   ].map(({ icon: Icon, label }) => (

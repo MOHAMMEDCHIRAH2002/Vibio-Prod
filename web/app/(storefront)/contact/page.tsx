@@ -98,7 +98,7 @@ export default function ContactPage() {
                   {
                     icon: Mail,
                     title: t('contact.emailUs'),
-                    content: 'hello@vibio.com',
+                    content: 'contact@vibio.ma',
                     sub: t('contact.emailSub'),
                   },
                   {

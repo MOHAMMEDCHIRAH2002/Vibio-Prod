@@ -17,28 +17,28 @@ import type { Category } from '@/types';
 const CARD_STYLES: Record<number, { minHeight: string; mediaWrap: string; content: string }> = {
   4: {
     minHeight: 'lg:min-h-[280px]',
-    mediaWrap: 'w-[43%] lg:w-[42%]',
-    content: 'max-w-[64%] sm:max-w-[54%] lg:max-w-[56%]',
+    mediaWrap: 'lg:w-[42%]',
+    content: 'lg:max-w-[56%]',
   },
   5: {
     minHeight: 'lg:min-h-[520px]',
-    mediaWrap: 'w-[56%] lg:w-[58%]',
-    content: 'max-w-[62%] sm:max-w-[48%] lg:max-w-[44%]',
+    mediaWrap: 'lg:w-[58%]',
+    content: 'lg:max-w-[44%]',
   },
   6: {
     minHeight: 'lg:min-h-[280px]',
-    mediaWrap: 'w-[43%] lg:w-[44%]',
-    content: 'max-w-[64%] sm:max-w-[54%] lg:max-w-[50%]',
+    mediaWrap: 'lg:w-[44%]',
+    content: 'lg:max-w-[50%]',
   },
   7: {
     minHeight: 'lg:min-h-[520px]',
-    mediaWrap: 'w-[55%] lg:w-[56%]',
-    content: 'max-w-[62%] sm:max-w-[46%] lg:max-w-[42%]',
+    mediaWrap: 'lg:w-[56%]',
+    content: 'lg:max-w-[42%]',
   },
   12: {
     minHeight: 'lg:min-h-[280px]',
-    mediaWrap: 'w-[43%] lg:w-[46%]',
-    content: 'max-w-[64%] sm:max-w-[54%] lg:max-w-[48%]',
+    mediaWrap: 'lg:w-[46%]',
+    content: 'lg:max-w-[48%]',
   },
 };
 
@@ -147,7 +147,7 @@ export default function CategoriesSection() {
                 <div key={category.id} className={`${COL_SPAN_CLASS[span]} ${style.minHeight}`}>
                   <Link
                     href={`/shop/${category.slug}`}
-                    className="group card-luxury relative flex h-full min-h-[280px] overflow-hidden rounded-[34px] border border-[#E7DDCC] bg-[#FFFEFA] p-5 shadow-[0_18px_55px_rgba(30,37,25,0.045)] transition-all duration-500 hover:-translate-y-1 hover:border-[#D8C7AD] hover:shadow-[0_26px_70px_rgba(30,37,25,0.09)] sm:p-6"
+                    className="group card-luxury relative flex h-full min-h-[280px] flex-col overflow-hidden rounded-[34px] border border-[#E7DDCC] bg-[#FFFEFA] p-0 shadow-[0_18px_55px_rgba(30,37,25,0.045)] transition-transform duration-500 hover:-translate-y-1 hover:border-[#D8C7AD] hover:shadow-[0_26px_70px_rgba(30,37,25,0.09)] lg:flex-row lg:p-6"
                   >
                     {/* Premium base light */}
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.92),rgba(255,255,255,0)_42%),linear-gradient(135deg,rgba(250,246,238,0.75),rgba(255,255,255,0.2))]" />
@@ -155,7 +155,7 @@ export default function CategoriesSection() {
                     {/* Image — or a branded monogram tile when the category has none,
                         so a missing image never leaves a blank half-card. */}
                     <div
-                      className={`absolute bottom-0 h-full ${style.mediaWrap} overflow-hidden ${isArabic ? 'left-0 rounded-r-[28px]' : 'right-0 rounded-l-[28px]'}`}
+                      className={`relative order-first h-56 w-full shrink-0 overflow-hidden rounded-t-[28px] lg:absolute lg:bottom-0 lg:order-none lg:h-full ${style.mediaWrap} ${isArabic ? 'lg:left-0 lg:rounded-r-[28px]' : 'lg:right-0 lg:rounded-l-[28px]'}`}
                     >
                       {image ? (
                         <Image
@@ -177,18 +177,18 @@ export default function CategoriesSection() {
                       )}
 
                       {/* Image soft fade */}
-                      <div className={`absolute inset-0 ${isArabic ? 'bg-[linear-gradient(270deg,rgba(255,254,250,0.92)_0%,rgba(255,254,250,0.42)_28%,rgba(255,254,250,0.02)_70%)]' : 'bg-[linear-gradient(90deg,rgba(255,254,250,0.92)_0%,rgba(255,254,250,0.42)_28%,rgba(255,254,250,0.02)_70%)]'}`} />
+                      <div className={`absolute inset-0 hidden lg:block ${isArabic ? 'bg-[linear-gradient(270deg,rgba(255,254,250,0.92)_0%,rgba(255,254,250,0.42)_28%,rgba(255,254,250,0.02)_70%)]' : 'bg-[linear-gradient(90deg,rgba(255,254,250,0.92)_0%,rgba(255,254,250,0.42)_28%,rgba(255,254,250,0.02)_70%)]'}`} />
                       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(30,37,25,0.08))]" />
                     </div>
 
                     {/* Text readability layer */}
-                    <div className={`pointer-events-none absolute inset-0 ${isArabic ? 'bg-[linear-gradient(270deg,rgba(255,254,250,0.98)_0%,rgba(255,254,250,0.9)_34%,rgba(255,254,250,0.34)_62%,rgba(255,254,250,0)_100%)]' : 'bg-[linear-gradient(90deg,rgba(255,254,250,0.98)_0%,rgba(255,254,250,0.9)_34%,rgba(255,254,250,0.34)_62%,rgba(255,254,250,0)_100%)]'}`} />
+                    <div className={`pointer-events-none absolute inset-0 hidden lg:block ${isArabic ? 'bg-[linear-gradient(270deg,rgba(255,254,250,0.98)_0%,rgba(255,254,250,0.9)_34%,rgba(255,254,250,0.34)_62%,rgba(255,254,250,0)_100%)]' : 'bg-[linear-gradient(90deg,rgba(255,254,250,0.98)_0%,rgba(255,254,250,0.9)_34%,rgba(255,254,250,0.34)_62%,rgba(255,254,250,0)_100%)]'}`} />
 
                     {/* Small luxury highlight */}
                     <div className="pointer-events-none absolute left-6 top-6 h-16 w-16 rounded-full bg-[#D8B36A]/10 blur-2xl" />
 
                     <div
-                      className={`relative z-10 flex h-full ${style.content} flex-col justify-between gap-8 ${isArabic ? 'ml-auto text-right' : 'text-left'}`}
+                      className={`relative z-10 flex h-auto w-full flex-col justify-between gap-8 p-5 sm:p-6 lg:h-full ${style.content} ${isArabic ? 'ml-auto text-right' : 'text-left'}`}
                     >
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#3D8B45]">
@@ -213,7 +213,7 @@ export default function CategoriesSection() {
                           </p>
                         )}
 
-                        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#E9DFD1] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#273E1C] shadow-[0_12px_24px_rgba(30,37,25,0.07)] backdrop-blur-sm transition-all duration-300 group-hover:border-[#D1B987] group-hover:bg-[#FFF9EE] group-hover:shadow-[0_16px_30px_rgba(30,37,25,0.1)]">
+                        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#E9DFD1] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#273E1C] shadow-[0_12px_24px_rgba(30,37,25,0.07)] backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-300 group-hover:border-[#D1B987] group-hover:bg-[#FFF9EE] group-hover:shadow-[0_16px_30px_rgba(30,37,25,0.1)]">
                           {t('common.discover')}
                           <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 rtl-flip" />
                         </div>

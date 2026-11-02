@@ -176,7 +176,7 @@ export default function Navbar() {
                 </button>
 
                 {session ? (
-                  <div className="relative z-20 hidden sm:block">
+                  <div className="relative z-20 block">
                     <button
                       onClick={() => setUserMenuOpen((value) => !value)}
                       className="flex items-center gap-3 rounded-full border border-[#ddd8cf] bg-white/76 px-2 py-1.5 transition-[border-color,background-color] duration-200 hover:border-[#c9b99a] hover:bg-[#f7f5f0]"
@@ -210,7 +210,7 @@ export default function Navbar() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 8, scale: 0.96 }}
                           transition={{ duration: 0.18 }}
-                          className="surface-panel absolute right-0 z-30 mt-3 w-64 p-2"
+                          className="surface-panel absolute right-0 z-30 mt-3 w-[min(16rem,calc(100vw-2rem))] p-2"
                         >
                           <div className="rounded-[22px] bg-[#F7F4EC] px-4 py-3">
                             <p className="text-[10px] uppercase tracking-[0.26em] text-[#7A8162]">
