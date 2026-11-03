@@ -1,8 +1,8 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,9 +20,20 @@ type Form = z.infer<typeof schema>;
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { status } = useSession();
   const redirect = searchParams.get('redirect') || '/';
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace(redirect);
+    }
+  }, [redirect, router, status]);
+
+  if (status === 'loading' || status === 'authenticated') {
+    return <div className="min-h-screen bg-[#F5F1E7]" />;
+  }
 
   const {
     register,

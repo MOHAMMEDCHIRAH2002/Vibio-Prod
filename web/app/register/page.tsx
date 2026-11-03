@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -26,8 +26,19 @@ type Form = z.infer<typeof schema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { status } = useSession();
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/');
+    }
+  }, [router, status]);
+
+  if (status === 'loading' || status === 'authenticated') {
+    return <div className="min-h-screen bg-primary-bg" />;
+  }
 
   const { register, handleSubmit, formState: { errors } } = useForm<Form>({
     resolver: zodResolver(schema),
