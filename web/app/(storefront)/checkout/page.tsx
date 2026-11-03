@@ -701,7 +701,17 @@ export default function CheckoutPage() {
 
               <PhoneOrder
                 className="mt-5"
-                context={{ kind: 'checkout', itemCount: cartData.items.length, total: formatPrice(total) }}
+                context={{
+                  kind: 'checkout',
+                  itemCount: cartData.items.length,
+                  total: formatPrice(total),
+                  items: cartData.items.map((item: any) => ({
+                    name: item.name,
+                    variantName: item.variantName,
+                    quantity: item.quantity,
+                    price: formatPrice(item.price * item.quantity),
+                  })),
+                }}
               />
             </div>
           </div>

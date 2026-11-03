@@ -11,7 +11,12 @@ const STORE_WHATSAPP = process.env.NEXT_PUBLIC_STORE_WHATSAPP_NUMBER || '';
 
 export type PhoneOrderContext =
   | { kind: 'product'; name: string; url?: string }
-  | { kind: 'cart' | 'checkout'; itemCount: number; total: string }
+  | {
+      kind: 'cart' | 'checkout';
+      itemCount: number;
+      total: string;
+      items: Array<{ name: string; variantName?: string; quantity: number; price: string }>;
+    }
   | undefined;
 
 interface Props {
@@ -35,7 +40,13 @@ export default function PhoneOrder({ context, className, variant = 'panel' }: Pr
       return t('phoneOrder.waProduct', { name: context.name, url: context.url || '' });
     }
     if (context?.kind === 'cart' || context?.kind === 'checkout') {
-      return t('phoneOrder.waCart', { count: context.itemCount, total: context.total });
+      const items = context.items
+        .map((item) => {
+          const variant = item.variantName ? ` — ${item.variantName}` : '';
+          return `• ${item.name}${variant} × ${item.quantity} = ${item.price}`;
+        })
+        .join('\n');
+      return t('phoneOrder.waCart', { count: context.itemCount, total: context.total, items });
     }
     return t('phoneOrder.waGeneric');
   })();

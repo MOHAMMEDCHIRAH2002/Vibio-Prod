@@ -174,7 +174,7 @@
     "copy": "Copier le numéro",
     "copied": "Numéro copié",
     "waProduct": "Bonjour, je souhaite commander : {{name}} — {{url}}",
-    "waCart": "Bonjour, je souhaite commander mon panier ({{count}} articles, total {{total}}).",
+    "waCart": "Bonjour, je souhaite commander mon panier ({{count}} articles, total {{total}}).\n\nDétail de ma commande :\n{{items}}",
     "waGeneric": "Bonjour, je souhaite passer une commande."
   },
   "cart": {

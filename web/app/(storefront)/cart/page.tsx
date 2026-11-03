@@ -224,7 +224,17 @@ export default function CartPage() {
 
               <PhoneOrder
                 className="mt-5"
-                context={{ kind: 'cart', itemCount: cartData.items.length, total: formatPrice(total) }}
+                context={{
+                  kind: 'cart',
+                  itemCount: cartData.items.length,
+                  total: formatPrice(total),
+                  items: cartData.items.map((item: any) => ({
+                    name: item.name,
+                    variantName: item.variantName,
+                    quantity: item.quantity,
+                    price: formatPrice(item.price * item.quantity),
+                  })),
+                }}
               />
             </div>
           </div>
