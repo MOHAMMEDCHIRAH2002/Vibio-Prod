@@ -65,7 +65,8 @@ export default function Navbar() {
     ],
     [categoryLinks],
   );
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.resolvedLanguage === 'ar';
   const pathname = usePathname();
   const { data: session } = useSession();
   const { itemCount } = useCart();
@@ -112,7 +113,7 @@ export default function Navbar() {
             )}
           >
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/90 to-transparent" />
-            <div className="flex items-center px-3 py-3 sm:px-5 lg:px-6">
+            <div className="relative flex items-center px-3 py-3 sm:px-5 lg:px-6">
               <div className="flex flex-1 min-w-0 items-center gap-2 sm:gap-3">
                 <button
                   onClick={() => setMobileOpen((value) => !value)}
@@ -132,16 +133,19 @@ export default function Navbar() {
 
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="nav-icon-btn lg:hidden"
+                  className="nav-icon-btn !h-10 !w-10 shrink-0 lg:hidden"
                   aria-label={t('nav.openSearch')}
                 >
                   <Search className="h-4 w-4" />
                 </button>
               </div>
 
-              <Link href="/" className="flex items-center justify-center">
+              <Link
+                href="/"
+                className="absolute left-1/2 flex -translate-x-1/2 items-center justify-center"
+              >
                 <BrandLogo
-                  className="h-11 w-36 sm:h-14 sm:w-[11.5rem]"
+                  className="h-9 w-28 sm:h-14 sm:w-[11.5rem]"
                   sizes="(min-width: 640px) 184px, 144px"
                   priority
                   trimPadding
@@ -164,7 +168,7 @@ export default function Navbar() {
 
                 <button
                   onClick={() => setCartOpen(true)}
-                  className="nav-icon-btn relative"
+                  className="nav-icon-btn relative !h-10 !w-10 sm:!h-[2.7rem] sm:!w-[2.7rem]"
                   aria-label={t('nav.openCart')}
                 >
                   <ShoppingBag className="h-4 w-4" />
@@ -179,9 +183,9 @@ export default function Navbar() {
                   <div className="relative z-20 block">
                     <button
                       onClick={() => setUserMenuOpen((value) => !value)}
-                      className="flex items-center gap-3 rounded-full border border-[#ddd8cf] bg-white/76 px-2 py-1.5 transition-[border-color,background-color] duration-200 hover:border-[#c9b99a] hover:bg-[#f7f5f0]"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-[#ddd8cf] bg-white/76 p-0 transition-[border-color,background-color] duration-200 hover:border-[#c9b99a] hover:bg-[#f7f5f0] lg:h-auto lg:w-auto lg:justify-start lg:gap-3 lg:px-2 lg:py-1.5"
                     >
-                      <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#F3F8E8] text-sm font-semibold text-[#273E1C]">
+                      <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#F3F8E8] text-sm font-semibold text-[#273E1C] lg:h-9 lg:w-9">
                         {session.user.image ? (
                           <Image
                             src={session.user.image}
@@ -200,7 +204,7 @@ export default function Navbar() {
                         </p>
                         <p className="text-xs text-[#5B6455]">{t('nav.viewProfile')}</p>
                       </div>
-                      <ChevronDown className="h-4 w-4 text-[#5B6455]" />
+                      <ChevronDown className="hidden h-4 w-4 text-[#5B6455] lg:block" />
                     </button>
 
                     <AnimatePresence>
@@ -210,13 +214,14 @@ export default function Navbar() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 8, scale: 0.96 }}
                           transition={{ duration: 0.18 }}
-                          className="surface-panel absolute right-0 z-30 mt-3 w-[min(16rem,calc(100vw-2rem))] p-2"
+                          dir={isArabic ? 'rtl' : 'ltr'}
+                          className="surface-panel absolute right-0 z-30 mt-3 w-[min(18rem,calc(100vw-2rem))] p-2 text-start"
                         >
                           <div className="rounded-[22px] bg-[#F7F4EC] px-4 py-3">
-                            <p className="text-[10px] uppercase tracking-[0.26em] text-[#7A8162]">
+                            <p className="text-[10px] uppercase tracking-[0.18em] text-[#7A8162]">
                               {t('nav.signedIn')}
                             </p>
-                            <p className="mt-2 truncate text-sm font-semibold text-[#1E2519]">
+                            <p className="mt-2 truncate text-sm font-semibold text-[#1E2519]" dir="ltr">
                               {session.user.email}
                             </p>
                           </div>
