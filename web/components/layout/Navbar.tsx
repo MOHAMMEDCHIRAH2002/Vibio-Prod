@@ -216,9 +216,10 @@ export default function Navbar() {
                           transition={{ duration: 0.18 }}
                           dir={isArabic ? 'rtl' : 'ltr'}
                           className={cn(
-                            'surface-panel fixed right-2 top-[4.75rem] z-30 mt-0 w-[min(18rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] p-2',
+                            'surface-panel fixed top-[4.75rem] z-30 mt-0 w-[min(18rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] p-2',
                             'text-start',
                             'lg:absolute lg:right-0 lg:top-auto lg:mt-3 lg:w-[min(18rem,calc(100vw-2rem))] lg:max-w-none',
+                            isArabic ? 'left-2 right-auto' : 'left-auto right-2',
                             isArabic ? 'text-right' : 'text-left',
                           )}
                         >
