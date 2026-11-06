@@ -293,7 +293,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className={cn('flex-1 p-4 sm:p-5 lg:pr-6 lg:py-6', desktopSidebarOffset)}>
           <div
             className={cn(
-              'fixed left-4 right-4 top-4 z-20 transition-[left,right] duration-300 ease-out sm:left-5 sm:right-5 lg:right-6',
+              'fixed left-2 right-2 top-2 z-20 transition-[left,right] duration-300 ease-out sm:left-5 sm:right-5 sm:top-4 lg:right-6',
               desktopTopbarOffset,
             )}
           >
@@ -302,7 +302,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
 
-          <div className="mx-auto max-w-[1600px] space-y-5 pt-[6.75rem] sm:pt-[7rem]">
+          <div className="mx-auto max-w-[1600px] space-y-5 pt-[5.25rem] sm:pt-[7rem]">
             <div className="admin-panel h-[18rem] animate-pulse" />
             <div className="grid gap-5 xl:grid-cols-3">
               <div className="admin-panel h-[16rem] animate-pulse xl:col-span-2" />
@@ -352,13 +352,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       >
         <div
           className={cn(
-            'fixed left-4 right-4 top-4 z-20 transition-[left,right] duration-300 ease-out sm:left-5 sm:right-5 lg:right-6',
+            'fixed left-2 right-2 top-2 z-20 transition-[left,right] duration-300 ease-out sm:left-5 sm:right-5 sm:top-4 lg:right-6',
             desktopTopbarOffset,
           )}
         >
           <div className="mx-auto max-w-[1600px]">
-            <header className="admin-topbar px-4 py-4 sm:px-5 lg:px-6">
-              <div className="flex min-w-0 flex-wrap items-center gap-3">
+            <header className="admin-topbar px-3 py-2.5 sm:px-5 sm:py-4 lg:px-6">
+              <div className="flex min-w-0 flex-nowrap items-center gap-2 sm:flex-wrap sm:gap-3">
                 <button
                   onClick={() => setSidebarOpen(true)}
                   className="admin-action-icon lg:hidden"
@@ -374,7 +374,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <BrandLogo className="h-7 w-24" sizes="96px" />
                 </Link>
 
-                <div className="min-w-0">
+                <div className="hidden min-w-0 sm:block">
                   <p className="admin-eyebrow">{t('admin.administration')}</p>
                   <div className="mt-2 flex min-w-0 max-w-full flex-wrap items-center gap-2 overflow-hidden text-sm text-[#6B7360]">
                     {breadcrumbSegments.map((segment, index) => (
@@ -393,10 +393,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </div>
                 </div>
 
-                <div className="ml-auto flex min-w-0 flex-wrap items-center gap-2">
+                <div className="ml-auto flex min-w-0 flex-nowrap items-center gap-1.5 sm:flex-wrap sm:gap-2">
                   <LanguageSwitcher variant="light" />
                   <div className="admin-chip ltr-nums hidden sm:block">{dateLabel}</div>
-                  <Link href="/" target="_blank" className="admin-btn-secondary !min-h-[2.7rem] !px-3 sm:!px-4">
+                  <Link href="/" target="_blank" className="admin-btn-secondary hidden !min-h-[2.7rem] !px-3 sm:inline-flex sm:!px-4">
                     {t('admin.viewStore')}
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Link>
@@ -406,7 +406,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
 
-        <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-5 pt-[6.75rem] sm:pt-[7rem]">
+        <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-5 pt-[5.25rem] sm:pt-[7rem]">
           <main className="flex-1">
             <div className="mx-auto w-full">{children}</div>
           </main>
