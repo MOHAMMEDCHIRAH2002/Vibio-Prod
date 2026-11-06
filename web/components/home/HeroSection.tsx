@@ -7,74 +7,9 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { categoriesApi, productsApi } from '@/lib/api';
+import { categoriesWithProducts } from '@/lib/categoryUtils';
+import type { Category, Product } from '@/types';
 import { ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react';
-
-/* ─────────────────────────────────────────────────────────────
-   BOTTOM-LEFT CAROUSEL DATA
-   Users scroll through featured products with ← → arrows
-───────────────────────────────────────────────────────────── */
-const carouselProducts = [
-  {
-    id: 0,
-    tags: ['Sale', 'Best'],
-    name: 'Jasmine Haze',
-    subtitle: 'Premium loose-leaf blend',
-    price: '8.99€',
-    oldPrice: '11.99€',
-    image: '/Thes/jasmine-haze.jpg',
-  },
-  {
-    id: 1,
-    tags: ['New'],
-    name: 'Organic Matcha',
-    subtitle: 'Ceremonial grade reserve',
-    price: '12.99€',
-    oldPrice: null,
-    image: '/Thes/organic-matcha(1).jpg',
-  },
-  {
-    id: 2,
-    tags: ['Top'],
-    name: 'Super Datte',
-    subtitle: 'Premium Medjool dates',
-    price: '9.99€',
-    oldPrice: null,
-    image: '/coffe/-super-datte-nature.jpg',
-  },
-];
-
-const categoryPresentation: Record<string, { label: string; description: string }> = {
-  'dates-sweets': { label: 'Dates', description: 'Premium Medjool dates' },
-  chocolates: { label: 'Chocolate', description: 'Artisan cacao' },
-  'coffee-tea': { label: 'Coffee & Tea', description: 'Rare brews' },
-  'herbal-infusions': { label: 'Herbal Tea', description: 'Botanical blends' },
-  'natural-beauty': { label: 'Beauty', description: 'Natural care' },
-};
-
-function shortCategoryLabel(name: string, slug: string) {
-  const knownCategory = categoryPresentation[slug];
-  if (knownCategory) return knownCategory.label;
-
-  return name
-    .replace(/&/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .join(' ');
-}
-
-function shortCategoryDescription(description: string, slug: string) {
-  const knownCategory = categoryPresentation[slug];
-  if (knownCategory) return knownCategory.description;
-
-  return description
-    .split(/[.!?]/)[0]
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 4)
-    .join(' ');
-}
 
 /* ─────────────────────────────────────────────────────────────
    RIGHT PANEL CATEGORY DATA
@@ -85,14 +20,22 @@ function shortCategoryDescription(description: string, slug: string) {
 ───────────────────────────────────────────────────────────── */
 export default function HeroSection() {
   const { t } = useTranslation();
-  const { data: categories } = useQuery({
+  const {
+    data: categories,
+    isLoading: categoriesLoading,
+    isError: categoriesError,
+  } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: categoriesApi.list,
     staleTime: 0,
     refetchOnWindowFocus: true,
     refetchInterval: 60_000,
   });
-  const { data: productsData } = useQuery({
+  const {
+    data: productsData,
+    isLoading: productsLoading,
+    isError: productsError,
+  } = useQuery({
     queryKey: ['hero-products'],
     queryFn: () => productsApi.list({ page: 1, limit: 100 }),
     staleTime: 60_000,
@@ -100,55 +43,68 @@ export default function HeroSection() {
   const [slideIndex, setSlideIndex] = useState(0);
   const [activeCat, setActiveCat] = useState('');
 
-  const categoryData = (categories ?? []).flatMap((category) =>
-    [category, ...(category.children ?? [])].map((item) => ({
-      id: item.id,
-      label: shortCategoryLabel(item.name, item.slug),
-      tag: shortCategoryDescription(item.description || '', item.slug),
-      name: shortCategoryLabel(item.name, item.slug),
-      price: '',
-      images: item.image ? [item.image] : ['/HeroImg.png'],
-      href: `/shop/${encodeURIComponent(item.slug)}`,
-    })),
-  ).slice(0, 3);
-  const fallbackCategory = {
-    id: 'shop',
-    label: t('nav.shop'),
-    tag: '',
-    name: t('nav.shop'),
-    price: '',
-    images: ['/HeroImg.png'],
-    href: '/shop',
-  };
-
   const dynamicCarouselProducts = useMemo(() => {
     const products = productsData?.data || [];
-    const usedCategoryIds = new Set<string>();
 
     return products
-      .filter((item: any) => item.images?.[0])
-      .filter((item: any) => {
-        if (!item.categoryId || usedCategoryIds.has(item.categoryId)) return false;
-        usedCategoryIds.add(item.categoryId);
-        return true;
-      })
+      .filter((item: Product) => item.images?.[0])
       .slice(0, 3)
-      .map((item: any, index: number) => ({
+      .map((item: Product, index: number) => ({
         id: item.id,
-        tags: index === 0 ? ['Sale', 'Best'] : index === 1 ? ['New'] : ['Top'],
+        tags: item.comparePrice
+          ? [t('hero.tags.sale')]
+          : item.isFeatured
+            ? [t('hero.tags.featured')]
+            : index === 0
+              ? [t('hero.tags.selection')]
+              : [],
         name: item.name,
-        subtitle: item.description?.split(/[.!?]/)[0]?.trim() || 'Premium Vibio selection',
+        subtitle:
+          item.shortDesc?.trim() ||
+          item.description?.split(/[.!?]/)[0]?.trim() ||
+          t('hero.productSelection'),
         price: `${Number(item.basePrice || item.variants?.[0]?.price || 0).toFixed(2)} MAD`,
         oldPrice: item.comparePrice ? `${Number(item.comparePrice).toFixed(2)} MAD` : null,
         image: item.images[0],
+        href: `/products/${encodeURIComponent(item.slug)}`,
       }));
-  }, [productsData]);
-  const carouselItems = dynamicCarouselProducts.length ? dynamicCarouselProducts : carouselProducts;
-  const product = carouselItems[slideIndex % carouselItems.length];
-  const category =
-    categoryData.find((item) => item.id === activeCat) ??
-    categoryData[0] ??
-    fallbackCategory;
+  }, [productsData, t]);
+
+  const categoryData = useMemo(() => {
+    const products = productsData?.data || [];
+    const allCategories = categoriesWithProducts(categories ?? []);
+    const flattenCategories = (items: Category[]): Category[] =>
+      items.flatMap((item) => [item, ...flattenCategories(item.children ?? [])]);
+
+    return flattenCategories(allCategories)
+      .map((item) => {
+        const categoryProducts = products.filter((product: Product) => product.categoryId === item.id);
+        const priceProduct = categoryProducts[0];
+        const representative = categoryProducts.find((product) => product.images?.[0]);
+        const images = [item.image, representative?.images?.[0]]
+          .filter((image): image is string => Boolean(image))
+          .filter((image, index, values) => values.indexOf(image) === index)
+          .slice(0, 2);
+
+        return {
+          id: item.id,
+          label: item.name,
+          tag: item.description?.split(/[.!?]/)[0]?.trim() || priceProduct?.name || '',
+          name: item.name,
+          price: priceProduct
+            ? `${Number(priceProduct.basePrice || priceProduct.variants?.[0]?.price || 0).toFixed(2)} MAD`
+            : '',
+          images,
+          href: `/shop/${encodeURIComponent(item.slug)}`,
+        };
+      })
+      .filter((item) => item.images.length > 0)
+      .slice(0, 3);
+  }, [categories, productsData]);
+
+  const carouselItems = dynamicCarouselProducts;
+  const product = carouselItems.length ? carouselItems[slideIndex % carouselItems.length] : undefined;
+  const category = categoryData.find((item) => item.id === activeCat) ?? categoryData[0];
 
   useEffect(() => {
     if (categoryData.length && !categoryData.some((item) => item.id === activeCat)) {
@@ -250,18 +206,22 @@ export default function HeroSection() {
                 <div className="pointer-events-none absolute inset-x-[16%] bottom-[11%] h-12 rounded-full bg-[#203423]/14 blur-[20px]" />
 
                 <div className="relative h-[22rem] sm:h-[26rem]">
-                  <Image
-                    src="/HeroImg.png"
-                    alt="Vibio editorial portrait holding product"
-                    fill
-                    priority
-                    sizes="(min-width: 640px) 420px, 92vw"
-                    className="object-contain object-bottom scale-[1.18]"
-                    style={{
-                      filter:
-                        'brightness(1.02) saturate(1.04) drop-shadow(0 32px 70px rgba(28,50,22,0.18)) drop-shadow(0 14px 28px rgba(0,0,0,0.08))',
-                    }}
-                  />
+                  {productsLoading ? (
+                    <div className="skeleton absolute inset-6 rounded-[2rem]" />
+                  ) : product ? (
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      priority
+                      sizes="(min-width: 640px) 420px, 92vw"
+                      className="object-contain object-center p-8"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center px-8 text-center text-sm leading-7 text-[#697266]">
+                      {productsError ? t('hero.loadError') : t('hero.emptyProducts')}
+                    </div>
+                  )}
                 </div>
 
                 <div className="relative mt-2 flex items-center justify-between gap-3 rounded bg-white/95 px-4 py-3">
@@ -270,16 +230,18 @@ export default function HeroSection() {
                       {t('hero.signatureReserve')}
                     </p>
                     <p className="mt-1 font-heading text-[1.45rem] leading-[1] tracking-[-0.05em] text-[#1A2017]">
-                      Organic Matcha
+                      {product?.name || (productsLoading ? t('common.loading') : t('hero.emptyProducts'))}
                     </p>
                   </div>
-                  <Link
-                    href={category.href}
-                    aria-label={`View ${category.name}`}
-                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-[#2d5016] text-white shadow-[0_14px_28px_rgba(227,60,20,0.2)] transition-colors duration-200 hover:bg-[#273E1C]"
-                  >
-                    <ArrowUpRight size={18} />
-                  </Link>
+                  {product && (
+                    <Link
+                      href={product.href}
+                      aria-label={t('common.viewProduct')}
+                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-[#2d5016] text-white shadow-[0_14px_28px_rgba(227,60,20,0.2)] transition-colors duration-200 hover:bg-[#273E1C]"
+                    >
+                      <ArrowUpRight size={18} />
+                    </Link>
+                  )}
                 </div>
               </motion.div>
             </div>
@@ -394,6 +356,8 @@ export default function HeroSection() {
                 backdropFilter: 'blur(14px)',
               }}
             >
+              {product ? (
+                <>
               {/* Product row: image + info */}
               <div className="flex items-start gap-3">
                 {/* Thumbnail */}
@@ -528,7 +492,7 @@ export default function HeroSection() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={prev}
-                    aria-label="Previous product"
+                    aria-label={t('hero.previousProduct')}
                     style={{
                       width: 34,
                       height: 34,
@@ -546,7 +510,7 @@ export default function HeroSection() {
                   </button>
                   <button
                     onClick={next}
-                    aria-label="Next product"
+                    aria-label={t('hero.nextProduct')}
                     style={{
                       width: 34,
                       height: 34,
@@ -564,6 +528,34 @@ export default function HeroSection() {
                   </button>
                 </div>
               </div>
+                </>
+              ) : (
+                <div className="flex min-h-[166px] flex-col justify-center gap-4">
+                  {productsLoading ? (
+                    <>
+                      <div className="flex items-start gap-3">
+                        <div className="skeleton h-[88px] w-[88px] shrink-0 rounded-2xl" />
+                        <div className="flex-1 space-y-3 pt-2">
+                          <div className="skeleton h-3 w-24 rounded-full" />
+                          <div className="skeleton h-5 w-3/4 rounded-full" />
+                          <div className="skeleton h-3 w-full rounded-full" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-[#E8DECE] pt-3">
+                        <div className="skeleton h-6 w-24 rounded-full" />
+                        <div className="flex gap-2">
+                          <div className="skeleton h-[34px] w-[34px] rounded-full" />
+                          <div className="skeleton h-[34px] w-[34px] rounded-full" />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-center text-sm leading-7 text-[#697266]">
+                      {productsError ? t('hero.loadError') : t('hero.emptyProducts')}
+                    </p>
+                  )}
+                </div>
+              )}
             </motion.div>
           </div>
 
@@ -680,7 +672,7 @@ export default function HeroSection() {
               />
               <Image
                 src="/HeroImg.png"
-                alt="Organic Matcha — Vibio Premium Collection"
+                alt={t('hero.signatureReserve')}
                 fill
                 className="object-contain object-bottom scale-[1.22]"
                 priority
@@ -725,6 +717,29 @@ export default function HeroSection() {
             style={{ borderLeft: '1px solid rgba(56,156,73,0.1)' }}
           >
             <div>
+              {categoriesError || productsError ? (
+                <div className="flex min-h-[370px] items-center justify-center rounded-xl border border-[#E8DECE] bg-white/70 p-6 text-center text-sm leading-7 text-[#697266]">
+                  {t('hero.loadError')}
+                </div>
+              ) : categoriesLoading || productsLoading ? (
+                <>
+                  <div className="mb-7 flex gap-2">
+                    {[1, 2, 3].map((item) => (
+                      <div key={item} className="skeleton h-7 w-20 rounded-full" />
+                    ))}
+                  </div>
+                  <div className="min-h-[330px] rounded-xl border border-[#E8DECE] bg-white/70 p-6">
+                    <div className="skeleton h-5 w-28 rounded-full" />
+                    <div className="mt-5 skeleton h-8 w-3/4 rounded-full" />
+                    <div className="mt-4 skeleton h-7 w-24 rounded-full" />
+                    <div className="mt-6 grid grid-cols-[1.2fr_0.8fr] gap-2.5">
+                      <div className="skeleton aspect-square rounded-[18px]" />
+                      <div className="skeleton aspect-square rounded-[18px]" />
+                    </div>
+                  </div>
+                </>
+              ) : category ? (
+                <>
               {/* Category tab bar */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -867,6 +882,12 @@ export default function HeroSection() {
                   </div>
                 </motion.div>
               </AnimatePresence>
+                </>
+              ) : (
+                <div className="flex min-h-[370px] items-center justify-center rounded-xl border border-[#E8DECE] bg-white/70 p-6 text-center text-sm leading-7 text-[#697266]">
+                  {t('hero.emptyCategories')}
+                </div>
+              )}
             </div>
           </div>
 

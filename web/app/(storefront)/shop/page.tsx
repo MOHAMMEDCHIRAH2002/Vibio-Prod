@@ -20,6 +20,8 @@ import {
 import { categoriesApi, productsApi } from '@/lib/api';
 import ProductGrid from '@/components/shop/ProductGrid';
 import FilterSidebar from '@/components/shop/FilterSidebar';
+import { categoriesWithProducts } from '@/lib/categoryUtils';
+import type { Category } from '@/types';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
@@ -74,7 +76,7 @@ export default function ShopPage() {
   const products = (data as any)?.products || [];
   const total = (data as any)?.total || 0;
   const pages = (data as any)?.pages || 1;
-  const categories = (categoriesData as any) || [];
+  const categories = categoriesWithProducts(((categoriesData as any) || []) as Category[]);
 
   const selectedCategoryName = useMemo(() => {
     if (!category) return undefined;

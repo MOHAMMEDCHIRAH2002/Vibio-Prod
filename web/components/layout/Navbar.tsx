@@ -29,6 +29,7 @@ import SearchModal from '@/components/common/SearchModal';
 import BrandLogo from '@/components/common/BrandLogo';
 import VisitStoreCTA from '@/components/store/VisitStoreCTA';
 import { categoriesApi } from '@/lib/api';
+import { categoriesWithProducts } from '@/lib/categoryUtils';
 
 const staticNavLinks = [
   { href: '/shop', key: 'nav.shop' },
@@ -47,16 +48,17 @@ export default function Navbar() {
     refetchOnWindowFocus: true,
     refetchInterval: 60_000,
   });
+  const visibleCategories = useMemo(() => categoriesWithProducts(categories ?? []), [categories]);
   const categoryLinks = useMemo(
     () =>
-      (categories ?? []).flatMap((category) =>
+      visibleCategories.flatMap((category) =>
         [category, ...(category.children ?? [])].map((item) => ({
           href: `/shop/${encodeURIComponent(item.slug)}`,
           key: item.name,
           isCategory: true,
         })),
       ),
-    [categories],
+    [visibleCategories],
   );
   const navLinks = useMemo(
     () => [
@@ -385,13 +387,13 @@ export default function Navbar() {
                       </div>
                     </section>
 
-                    {categories && categories.length > 0 && (
+                    {visibleCategories.length > 0 && (
                       <section className="mt-6 border-t border-[#EEE8DC] pt-5">
                         <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#B9894B]">
                           {t('common.exploreCollections')}
                         </p>
                         <div className="mt-2 space-y-1.5">
-                          {categories.map((category) => {
+                          {visibleCategories.map((category) => {
                             const children = category.children ?? [];
                             const expanded = expandedCategoryIds.includes(category.id);
                             const categoryHref = `/shop/${encodeURIComponent(category.slug)}`;

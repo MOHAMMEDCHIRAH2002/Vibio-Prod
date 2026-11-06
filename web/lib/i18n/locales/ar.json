@@ -665,6 +665,17 @@
     "descriptionShort": "شاي نادر، تمور فاخرة، وشوكولاتة راقية — منتقاة لمن يقدّر الجودة.",
     "microcopy": "صُمّم لأسلوب حياة هادئ وراقٍ.",
     "signatureReserve": "المجموعة المميّزة",
+    "productSelection": "اختيار Vibio",
+    "emptyProducts": "لا توجد منتجات متاحة حاليًا.",
+    "emptyCategories": "لا توجد مجموعات متاحة حاليًا.",
+    "loadError": "تعذّر تحميل هذا الاختيار حاليًا.",
+    "previousProduct": "المنتج السابق",
+    "nextProduct": "المنتج التالي",
+    "tags": {
+      "sale": "عرض",
+      "featured": "مميّز",
+      "selection": "اختيار"
+    },
     "stats": {
       "products": "منتجات منتقاة",
       "rating": "تقييم العملاء",

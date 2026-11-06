@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Category } from '@/types';
+import { categoriesWithProducts } from '@/lib/categoryUtils';
 
 interface FilterSidebarProps {
   open: boolean;
@@ -27,6 +28,7 @@ export default function FilterSidebar({
   onPriceChange,
 }: FilterSidebarProps) {
   const { t } = useTranslation();
+  const visibleCategories = categoriesWithProducts(categories);
   return (
     <AnimatePresence>
       {open && (
@@ -81,7 +83,7 @@ export default function FilterSidebar({
                     >
                       {t('shop.allProducts')}
                     </button>
-                    {categories.map((cat) => (
+                    {visibleCategories.map((cat) => (
                       <button
                         key={cat.id}
                         onClick={() => onCategoryChange(cat.slug)}

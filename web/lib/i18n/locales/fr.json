@@ -665,6 +665,17 @@
     "descriptionShort": "Thés rares, dattes gourmandes et chocolats fins — sélectionnés pour ceux qui apprécient la qualité.",
     "microcopy": "Pensé pour un art de vivre calme et raffiné.",
     "signatureReserve": "Réserve signature",
+    "productSelection": "Sélection Vibio",
+    "emptyProducts": "Aucun produit disponible pour le moment.",
+    "emptyCategories": "Aucune collection disponible pour le moment.",
+    "loadError": "Impossible de charger cette sélection pour le moment.",
+    "previousProduct": "Produit précédent",
+    "nextProduct": "Produit suivant",
+    "tags": {
+      "sale": "Offre",
+      "featured": "Vedette",
+      "selection": "Sélection"
+    },
     "stats": {
       "products": "Produits sélectionnés",
       "rating": "Note clients",

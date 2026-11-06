@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { categoriesApi } from '@/lib/api';
 import type { Category } from '@/types';
+import { categoriesWithProducts } from '@/lib/categoryUtils';
 
 /**
  * Card proportions keyed by the column span the card occupies. Wider cards give
@@ -103,11 +104,12 @@ export default function CategoriesSection() {
     );
   }
 
-  if (!categories?.length) return null;
+  const visibleCategories = categoriesWithProducts(categories ?? []);
+  if (!visibleCategories.length) return null;
 
   // Every category is shown — the homepage is where customers orient themselves,
   // so silently dropping one hides a whole part of the catalogue.
-  const spans = columnSpans(categories.length);
+  const spans = columnSpans(visibleCategories.length);
 
   return (
     <section className="px-4 py-8 sm:px-6 lg:px-8">
@@ -137,7 +139,7 @@ export default function CategoriesSection() {
           </div>
 
           <div className="mt-7 grid gap-4 lg:grid-cols-12">
-            {categories.map((category, index) => {
+            {visibleCategories.map((category, index) => {
               const span = spans[index];
               const style = CARD_STYLES[span];
               const image = category.image;

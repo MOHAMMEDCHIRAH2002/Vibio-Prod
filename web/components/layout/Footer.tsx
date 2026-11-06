@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Mail, MapPin, Phone, ArrowRight } from 'lucide-react';
 import { categoriesApi } from '@/lib/api';
 import { socialLinks, storeConfig } from '@/lib/storeConfig';
+import { categoriesWithProducts } from '@/lib/categoryUtils';
+import type { Category } from '@/types';
 
 const SOCIAL = [
   {
@@ -49,7 +51,7 @@ export default function Footer() {
     refetchOnWindowFocus: true,
     refetchInterval: 60_000,
   });
-  const shopLinks = (categories ?? []).flatMap((category) =>
+  const shopLinks = categoriesWithProducts((categories ?? []) as Category[]).flatMap((category) =>
       [category, ...(category.children ?? [])].map((item) => ({
         href: `/shop/${encodeURIComponent(item.slug)}`,
         key: item.name,
