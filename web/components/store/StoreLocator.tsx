@@ -13,26 +13,26 @@ export default function StoreLocator() {
   const fullAddress = [...s.addressLines].join(', ');
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6 overflow-hidden">
       {/* Header */}
-      <div className="surface-shell p-6 sm:p-7 lg:p-8">
+      <div className="surface-shell p-5 sm:p-7 lg:p-8">
         <p className="section-eyebrow">{t('store.eyebrow')}</p>
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <h1 className="max-w-3xl font-heading text-[clamp(2.4rem,5vw,4.1rem)] leading-[0.95] tracking-[-0.05em] text-[#1E2519]">
+        <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <h1 className="max-w-3xl break-words font-heading text-[clamp(2.25rem,8vw,4.1rem)] leading-[0.95] tracking-[-0.05em] text-[#1E2519]">
             {t('store.title')}
           </h1>
-          <p className="max-w-md text-[15px] leading-8 text-[#5B6455]">{t('store.subtitle')}</p>
+          <p className="max-w-md text-[14px] leading-7 text-[#5B6455] sm:text-[15px] sm:leading-8">{t('store.subtitle')}</p>
         </div>
       </div>
 
       {/* Gallery */}
       {s.photos.length > 0 && (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-2">
           {s.photos.slice(0, 4).map((photo, i) => (
             <div
               key={photo.src}
-              className={`group relative min-h-[300px] overflow-hidden rounded-[28px] border border-[#E7DDCC] bg-[#F4F0E5] ${
-              i === 0 ? 'sm:col-span-2 aspect-[16/8] lg:min-h-[430px]' : 'aspect-[4/3] lg:min-h-[340px]'
+              className={`group relative min-h-0 overflow-hidden rounded-[24px] border border-[#E7DDCC] bg-[#F4F0E5] sm:rounded-[28px] ${
+              i === 0 ? 'aspect-[4/3] sm:col-span-2 sm:aspect-[16/8] lg:min-h-[430px]' : 'aspect-[4/3] lg:min-h-[340px]'
               }`}
             >
               <Image
@@ -51,17 +51,17 @@ export default function StoreLocator() {
       {/* Info + map */}
       <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         {/* Info column */}
-        <div className="surface-shell flex flex-col gap-7 p-6 sm:p-7 lg:p-8">
+        <div className="surface-shell flex min-w-0 flex-col gap-7 p-5 sm:p-7 lg:p-8">
           {/* Address */}
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#E3D8C8] bg-white/72 text-[#273E1C]">
               <MapPin className="h-5 w-5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#B9894B]">
                 {t('store.addressLabel')}
               </p>
-              <address className="mt-2 not-italic text-[15px] leading-8 text-[#1E2519]">
+              <address className="mt-2 break-words not-italic text-[15px] leading-8 text-[#1E2519]">
                 {s.addressLines.map((line) => (
                   <span key={line} className="block">
                     {line}
@@ -152,7 +152,7 @@ export default function StoreLocator() {
 
         {/* Map column with graceful fallback */}
         <div className="surface-shell overflow-hidden p-2 sm:p-2.5">
-          <div className="relative h-full min-h-[360px] w-full overflow-hidden rounded-[26px] border border-[#E7DDCC] bg-[#EEF1E6]">
+        <div className="relative min-h-[300px] w-full overflow-hidden rounded-[22px] border border-[#E7DDCC] bg-[#EEF1E6] sm:min-h-[360px] lg:h-full lg:min-h-[520px]">
             {!mapFailed ? (
               <iframe
                 title={t('store.mapTitle')}

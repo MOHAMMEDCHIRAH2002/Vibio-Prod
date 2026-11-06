@@ -393,13 +393,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </div>
                 </div>
 
-                <div
-                  className={cn(
-                    'ml-auto flex min-w-0 flex-nowrap items-center gap-1.5 sm:flex-wrap sm:gap-2',
-                    i18n.resolvedLanguage === 'ar' &&
-                      'absolute left-12 top-1/2 -translate-y-1/2 sm:static sm:ml-auto sm:translate-y-0',
-                  )}
-                >
+                <div className="ml-auto flex min-w-0 flex-nowrap items-center gap-1.5 sm:flex-wrap sm:gap-2">
                   <LanguageSwitcher variant="light" />
                   {i18n.resolvedLanguage !== 'ar' && (
                     <div className="admin-chip ltr-nums hidden sm:block">{dateLabel}</div>
