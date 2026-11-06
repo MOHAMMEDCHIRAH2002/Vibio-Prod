@@ -369,7 +369,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 <Link
                   href="/admin"
-                  className="inline-flex rounded-full border border-[#ECE7DB] bg-white/82 px-3 py-2 shadow-[0_12px_32px_rgba(24,30,24,0.08)] lg:hidden"
+                  className="absolute left-1/2 inline-flex -translate-x-1/2 rounded-full border border-[#ECE7DB] bg-white/82 px-3 py-2 shadow-[0_12px_32px_rgba(24,30,24,0.08)] lg:static lg:translate-x-0 lg:hidden"
                 >
                   <BrandLogo className="h-7 w-24" sizes="96px" />
                 </Link>
@@ -395,7 +395,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 <div className="ml-auto flex min-w-0 flex-nowrap items-center gap-1.5 sm:flex-wrap sm:gap-2">
                   <LanguageSwitcher variant="light" />
-                  <div className="admin-chip ltr-nums hidden sm:block">{dateLabel}</div>
+                  {i18n.resolvedLanguage !== 'ar' && (
+                    <div className="admin-chip ltr-nums hidden sm:block">{dateLabel}</div>
+                  )}
                   <Link href="/" target="_blank" className="admin-btn-secondary hidden !min-h-[2.7rem] !px-3 sm:inline-flex sm:!px-4">
                     {t('admin.viewStore')}
                     <ExternalLink className="h-3.5 w-3.5" />
