@@ -323,7 +323,7 @@ export default function HeroSection() {
                   lineHeight: 1.82,
                   color: '#7A887B',
                   maxWidth: 295,
-                  margin: '0 0 4rem',
+                  margin: '0 0 1.75rem',
                 }}
               >
                 {t('hero.descriptionShort')}
@@ -346,7 +346,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.65, delay: 0.38 }}
-              className="mt-8 lg:mt-0"
+              className="mt-8 lg:mt-8"
               style={{
                 background: 'rgba(255, 253, 249, 0.92)',
                 border: '1px solid rgba(218, 206, 182, 0.55)',
