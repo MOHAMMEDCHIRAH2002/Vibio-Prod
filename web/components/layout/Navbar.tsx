@@ -47,6 +47,24 @@ export default function Navbar() {
     refetchOnWindowFocus: true,
     refetchInterval: 60_000,
   });
+  const categoryLinks = useMemo(
+    () =>
+      (categories ?? []).flatMap((category) =>
+        [category, ...(category.children ?? [])].map((item) => ({
+          href: `/shop/${encodeURIComponent(item.slug)}`,
+          key: item.name,
+          isCategory: true,
+        })),
+      ),
+    [categories],
+  );
+  const navLinks = useMemo(
+    () => [
+      ...staticNavLinks.map((link) => ({ ...link, isCategory: false })),
+      ...categoryLinks,
+    ],
+    [categoryLinks],
+  );
   const { t, i18n } = useTranslation();
   const isArabic = i18n.resolvedLanguage === 'ar';
   const pathname = usePathname();
@@ -268,7 +286,63 @@ export default function Navbar() {
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.24 }}
                   dir={isArabic ? 'rtl' : 'ltr'}
-                  className="overflow-hidden border-t border-[#EEE8DC]"
+                  className="hidden overflow-hidden border-t border-[#EEE8DC] lg:block"
+                >
+                  <div className="grid gap-8 px-4 pb-5 pt-5 lg:grid-cols-[1.15fr_0.85fr] lg:px-6">
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {navLinks.map((link) => {
+                        const active = pathname === link.href;
+                        return (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            className={cn(
+                              'rounded-[22px] px-4 py-3 text-sm font-medium transition-colors duration-200',
+                              active
+                                ? 'bg-[#F3F8E8] text-[#273E1C]'
+                                : 'bg-white/64 text-[#5B6455] hover:bg-[#F7F4EC] hover:text-[#1E2519]',
+                            )}
+                          >
+                            {link.isCategory ? link.key : t(link.key)}
+                          </Link>
+                        );
+                      })}
+                    </div>
+
+                    <div className="surface-olive p-5">
+                      <p className="text-[10px] uppercase tracking-[0.26em] text-[#6C8349]">
+                        {t('nav.brandNoteLabel')}
+                      </p>
+                      <p className="mt-3 max-w-sm text-sm leading-7 text-[#43503E]">
+                        {t('nav.brandNote')}
+                      </p>
+                      <div className="mt-5 flex flex-wrap items-center gap-3">
+                        <VisitStoreCTA variant="solid" showArrow />
+                        <button onClick={() => setSearchOpen(true)} className="btn-gold">
+                          {t('common.search')}
+                        </button>
+                        {!session && (
+                          <Link href="/login" className="btn-outline-gold">
+                            {t('common.signIn')}
+                          </Link>
+                        )}
+                        <LanguageSwitcher />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {mobileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.24 }}
+                  dir={isArabic ? 'rtl' : 'ltr'}
+                  className="overflow-hidden border-t border-[#EEE8DC] lg:hidden"
                 >
                   <div className="max-h-[min(72vh,38rem)] overflow-y-auto overscroll-contain px-3 pb-4 pt-3 sm:px-5 sm:pb-6">
                     <div className="flex items-center justify-between border-b border-[#EEE8DC] px-1 pb-3">
