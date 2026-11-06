@@ -105,7 +105,9 @@ export default function AdminOrderDetailPage() {
             <p className="mt-3 text-sm text-[#6B6A63]">{formatDate(currentOrder.createdAt)}</p>
           </div>
           <span className={`ml-auto admin-badge ${getOrderStatusColor(currentOrder.status)}`}>
-            {t(`orderStatus.${currentOrder.status}`, { defaultValue: currentOrder.status })}
+            {t(`admin.ordersPage.statuses.${String(currentOrder.status).toLowerCase()}`, {
+              defaultValue: String(currentOrder.status),
+            })}
           </span>
         </div>
       </section>
@@ -142,7 +144,7 @@ export default function AdminOrderDetailPage() {
                 >
                   {ORDER_STATUSES.map((status) => (
                     <option key={status} value={status}>
-                      {t(`orderStatus.${status}`, { defaultValue: status })}
+                      {t(`admin.ordersPage.statuses.${status.toLowerCase()}`, { defaultValue: status })}
                     </option>
                   ))}
                 </select>

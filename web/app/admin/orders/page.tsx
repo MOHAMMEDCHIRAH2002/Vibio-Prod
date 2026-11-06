@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { ordersApi } from '@/lib/api';
 import { formatDate, formatPrice, getOrderStatusColor } from '@/lib/utils';
 
-const statuses = ['ALL', 'PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+const statuses = ['ALL', 'PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
 
 export default function AdminOrdersPage() {
   const { t } = useTranslation();
@@ -59,7 +59,7 @@ export default function AdminOrdersPage() {
             <div className="admin-chip">{t('admin.ordersPage.totalOrders', { count: total })}</div>
             <Link href="/admin/orders/new" className="admin-btn-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#315824]">
               <Plus className="h-4 w-4" />
-              Create order
+              {t('admin.ordersPage.createOrder')}
             </Link>
           </div>
         </div>

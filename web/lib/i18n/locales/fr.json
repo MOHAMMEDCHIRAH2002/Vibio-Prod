@@ -1046,6 +1046,7 @@
       "eyebrow": "Flux des commandes",
       "subcopy": "Suivez le parcours commercial de la confirmation à la livraison, avec une meilleure visibilité des statuts et une lecture opérationnelle plus calme.",
       "totalOrders": "{{count}} commandes au total",
+      "createOrder": "Créer une commande",
       "searchPlaceholder": "Rechercher par n° de commande, nom ou e-mail du client…",
       "allOrders": "Toutes les commandes",
       "order": "Commande",
@@ -1061,7 +1062,8 @@
         "processing": "En préparation",
         "shipped": "Expédiée",
         "delivered": "Livrée",
-        "cancelled": "Annulée"
+        "cancelled": "Annulée",
+        "refunded": "Remboursée"
       }
     },
     "stockPage": {
