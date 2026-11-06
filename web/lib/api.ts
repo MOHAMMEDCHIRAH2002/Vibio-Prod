@@ -8,6 +8,7 @@ import type {
   Order,
   PaginatedResponse,
   Product,
+  ProductListResponse,
   Review,
   Banner,
   BlogPost,
@@ -190,7 +191,7 @@ const request = <T>(config: AxiosRequestConfig): Promise<T> =>
 // Products
 export const productsApi = {
   list: (params?: Record<string, any>) =>
-    request<PaginatedResponse<Product>>({ method: 'GET', url: '/products', params }),
+    request<ProductListResponse>({ method: 'GET', url: '/products', params }),
   featured: () => request<Product[]>({ method: 'GET', url: '/products/featured' }),
   bySlug: (slug: string) => request<Product>({ method: 'GET', url: `/products/${slug}` }),
   getById: (id: string) => request<Product>({ method: 'GET', url: `/products/by-id/${id}` }),

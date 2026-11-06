@@ -44,7 +44,7 @@ export default function HeroSection() {
   const [activeCat, setActiveCat] = useState('');
 
   const dynamicCarouselProducts = useMemo(() => {
-    const products = productsData?.data || [];
+    const products = productsData?.products || [];
 
     return products
       .filter((item: Product) => item.images?.[0])
@@ -71,7 +71,7 @@ export default function HeroSection() {
   }, [productsData, t]);
 
   const categoryData = useMemo(() => {
-    const products = productsData?.data || [];
+    const products = productsData?.products || [];
     const allCategories = categoriesWithProducts(categories ?? []);
     const flattenCategories = (items: Category[]): Category[] =>
       items.flatMap((item) => [item, ...flattenCategories(item.children ?? [])]);

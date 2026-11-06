@@ -212,3 +212,11 @@ export interface PaginatedResponse<T> {
   limit: number;
   pages: number;
 }
+
+export interface ProductListResponse {
+  products: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
