@@ -334,7 +334,7 @@ export default function ProductDetailClient({ initialProduct: product }: Props) 
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1.06fr_0.94fr]">
+          {/* <div className="grid gap-6 lg:grid-cols-[1.06fr_0.94fr]">
             <div className="surface-shell p-6 sm:p-7">
               <button
                 onClick={() => setDescOpen((current) => !current)}
@@ -378,7 +378,7 @@ export default function ProductDetailClient({ initialProduct: product }: Props) 
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
-          </div>
+          </div> */}
 
           <div className="surface-shell p-6 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#ECE6D9] pb-6">

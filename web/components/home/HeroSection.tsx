@@ -323,7 +323,7 @@ export default function HeroSection() {
                   lineHeight: 1.82,
                   color: '#7A887B',
                   maxWidth: 295,
-                  margin: '0 0 1.75rem',
+                  margin: '0 0 4rem',
                 }}
               >
                 {t('hero.descriptionShort')}
