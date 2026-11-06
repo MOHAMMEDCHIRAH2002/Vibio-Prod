@@ -215,7 +215,12 @@ export default function Navbar() {
                           exit={{ opacity: 0, y: 8, scale: 0.96 }}
                           transition={{ duration: 0.18 }}
                           dir={isArabic ? 'rtl' : 'ltr'}
-                          className="surface-panel absolute right-0 z-30 mt-3 w-[min(18rem,calc(100vw-2rem))] p-2 text-start"
+                          className={cn(
+                            'surface-panel fixed right-2 top-[4.75rem] z-30 mt-0 w-[min(18rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] p-2',
+                            'text-start',
+                            'lg:absolute lg:right-0 lg:top-auto lg:mt-3 lg:w-[min(18rem,calc(100vw-2rem))] lg:max-w-none',
+                            isArabic ? 'text-right' : 'text-left',
+                          )}
                         >
                           <div className="rounded-[22px] bg-[#F7F4EC] px-4 py-3">
                             <p className="text-[10px] uppercase tracking-[0.18em] text-[#7A8162]">
