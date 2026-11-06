@@ -268,7 +268,7 @@ export default function Navbar() {
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.24 }}
                   dir={isArabic ? 'rtl' : 'ltr'}
-                  className="overflow-hidden border-t border-[#EEE8DC] lg:hidden"
+                  className="overflow-hidden border-t border-[#EEE8DC]"
                 >
                   <div className="max-h-[min(72vh,38rem)] overflow-y-auto overscroll-contain px-3 pb-4 pt-3 sm:px-5 sm:pb-6">
                     <div className="flex items-center justify-between border-b border-[#EEE8DC] px-1 pb-3">
