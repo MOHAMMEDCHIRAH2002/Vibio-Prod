@@ -541,13 +541,13 @@ export default function HeroSection() {
                           <div className="skeleton h-3 w-full rounded-full" />
                         </div>
                       </div>
-                      <div className="flex items-center justify-between border-t border-[#E8DECE] pt-3">
+                      {/* <div className="flex items-center justify-between border-t border-[#E8DECE] pt-3">
                         <div className="skeleton h-6 w-24 rounded-full" />
                         <div className="flex gap-2">
                           <div className="skeleton h-[34px] w-[34px] rounded-full" />
                           <div className="skeleton h-[34px] w-[34px] rounded-full" />
                         </div>
-                      </div>
+                      </div> */}
                     </>
                   ) : (
                     <p className="text-center text-sm leading-7 text-[#697266]">
