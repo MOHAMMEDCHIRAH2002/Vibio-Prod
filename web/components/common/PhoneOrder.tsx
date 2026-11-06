@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { Phone, Copy, Check, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { storeConfig } from '@/lib/storeConfig';
 
-/** Configurable store contact — baked from NEXT_PUBLIC_* at build time. */
-const STORE_PHONE = process.env.NEXT_PUBLIC_STORE_PHONE_NUMBER || '';
-const STORE_WHATSAPP = process.env.NEXT_PUBLIC_STORE_WHATSAPP_NUMBER || '';
+const STORE_PHONE = storeConfig.phone;
+const STORE_WHATSAPP = storeConfig.whatsapp;
 
 export type PhoneOrderContext =
   | { kind: 'product'; name: string; url?: string }
