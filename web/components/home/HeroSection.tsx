@@ -541,13 +541,13 @@ export default function HeroSection() {
                           <div className="skeleton h-3 w-full rounded-full" />
                         </div>
                       </div>
-                      {/* <div className="flex items-center justify-between border-t border-[#E8DECE] pt-3">
+                      <div className="flex items-center justify-between border-t border-[#E8DECE] pt-3">
                         <div className="skeleton h-6 w-24 rounded-full" />
                         <div className="flex gap-2">
                           <div className="skeleton h-[34px] w-[34px] rounded-full" />
                           <div className="skeleton h-[34px] w-[34px] rounded-full" />
                         </div>
-                      </div> */}
+                      </div>
                     </>
                   ) : (
                     <p className="text-center text-sm leading-7 text-[#697266]">
@@ -731,10 +731,10 @@ export default function HeroSection() {
                   <div className="min-h-[330px] rounded-xl border border-[#E8DECE] bg-white/70 p-6">
                     <div className="skeleton h-5 w-28 rounded-full" />
                     <div className="mt-5 skeleton h-8 w-3/4 rounded-full" />
-                    <div className="mt-4 skeleton h-7 w-24 rounded-full" />
+                    {/* <div className="mt-4 skeleton h-7 w-24 rounded-full" /> */}
                     <div className="mt-6 grid grid-cols-[1.2fr_0.8fr] gap-2.5">
                       <div className="skeleton aspect-square rounded-[18px]" />
-                      <div className="skeleton aspect-square rounded-[18px]" />
+                      {/* <div className="skeleton aspect-square rounded-[18px]" /> */}
                     </div>
                   </div>
                 </>
