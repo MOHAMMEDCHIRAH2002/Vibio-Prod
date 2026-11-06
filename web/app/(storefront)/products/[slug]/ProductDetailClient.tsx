@@ -318,7 +318,7 @@ export default function ProductDetailClient({ initialProduct: product }: Props) 
               {/* Ask a question about this product (notifies the store owner) */}
               <ProductInquiry productId={product.id} productName={product.name} className="mt-2" />
 
-              <div className="grid gap-4 sm:grid-cols-3">
+              {/* <div className="grid gap-4 sm:grid-cols-3">
                 {benefitCards.map(({ icon: Icon, label, text }) => (
                   <div key={label} className="surface-panel p-5">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EFF5E7] text-[#273E1C]">
@@ -330,7 +330,7 @@ export default function ProductDetailClient({ initialProduct: product }: Props) 
                     <p className="mt-2 text-sm leading-7 text-[#5B6455]">{text}</p>
                   </div>
                 ))}
-              </div>
+              </div> */}
             </div>
           </div>
 
