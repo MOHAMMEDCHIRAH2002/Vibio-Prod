@@ -47,24 +47,6 @@ export default function Navbar() {
     refetchOnWindowFocus: true,
     refetchInterval: 60_000,
   });
-  const categoryLinks = useMemo(
-    () =>
-      (categories ?? []).flatMap((category) =>
-        [category, ...(category.children ?? [])].map((item) => ({
-          href: `/shop/${encodeURIComponent(item.slug)}`,
-          key: item.name,
-          isCategory: true,
-        })),
-      ),
-    [categories],
-  );
-  const navLinks = useMemo(
-    () => [
-      ...staticNavLinks.map((link) => ({ ...link, isCategory: false })),
-      ...categoryLinks,
-    ],
-    [categoryLinks],
-  );
   const { t, i18n } = useTranslation();
   const isArabic = i18n.resolvedLanguage === 'ar';
   const pathname = usePathname();
@@ -77,6 +59,7 @@ export default function Navbar() {
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<string[]>([]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -284,43 +267,130 @@ export default function Navbar() {
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.24 }}
-                  className="overflow-hidden border-t border-[#EEE8DC]"
+                  dir={isArabic ? 'rtl' : 'ltr'}
+                  className="overflow-hidden border-t border-[#EEE8DC] lg:hidden"
                 >
-                  <div className="grid gap-8 px-4 pb-5 pt-5 lg:grid-cols-[1.15fr_0.85fr] lg:px-6">
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {navLinks.map((link) => {
-                        const active = pathname === link.href;
-                        return (
-                          <Link
-                            key={link.href}
-                            href={link.href}
-                            className={cn(
-                              'rounded-[22px] px-4 py-3 text-sm font-medium transition-colors duration-200',
-                              active
-                                ? 'bg-[#F3F8E8] text-[#273E1C]'
-                                : 'bg-white/64 text-[#5B6455] hover:bg-[#F7F4EC] hover:text-[#1E2519]',
-                            )}
-                          >
-                            {link.isCategory ? link.key : t(link.key)}
-                          </Link>
-                        );
-                      })}
+                  <div className="max-h-[min(72vh,38rem)] overflow-y-auto overscroll-contain px-3 pb-4 pt-3 sm:px-5 sm:pb-6">
+                    <div className="flex items-center justify-between border-b border-[#EEE8DC] px-1 pb-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#7A8162]">
+                        {t('nav.menu')}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setMobileOpen(false)}
+                        className="nav-icon-btn !h-9 !w-9"
+                        aria-label={t('nav.closeMenu')}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
 
-                    <div className="surface-olive p-5">
+                    <section className="pt-4">
+                      <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#B9894B]">
+                        {t('nav.shop')}
+                      </p>
+                      <div className="mt-2 grid gap-1.5">
+                        {staticNavLinks.map((link) => {
+                          const active = pathname === link.href;
+                          return (
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              onClick={() => setMobileOpen(false)}
+                              className={cn(
+                                'flex min-h-12 items-center rounded-2xl px-4 py-3 text-sm font-medium transition-colors duration-200',
+                                active
+                                  ? 'bg-[#F3F8E8] text-[#273E1C]'
+                                  : 'text-[#4F594B] hover:bg-[#F7F4EC] hover:text-[#1E2519]',
+                              )}
+                            >
+                              {t(link.key)}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </section>
+
+                    {categories && categories.length > 0 && (
+                      <section className="mt-6 border-t border-[#EEE8DC] pt-5">
+                        <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#B9894B]">
+                          {t('common.exploreCollections')}
+                        </p>
+                        <div className="mt-2 space-y-1.5">
+                          {categories.map((category) => {
+                            const children = category.children ?? [];
+                            const expanded = expandedCategoryIds.includes(category.id);
+                            const categoryHref = `/shop/${encodeURIComponent(category.slug)}`;
+                            const active = pathname === categoryHref;
+
+                            return (
+                              <div key={category.id} className="overflow-hidden rounded-2xl border border-[#EEE8DC] bg-white/55">
+                                <div className="flex min-h-12 items-center">
+                                  <Link
+                                    href={categoryHref}
+                                    onClick={() => setMobileOpen(false)}
+                                    className={cn(
+                                      'min-w-0 flex-1 truncate px-4 py-3 text-sm font-medium',
+                                      active ? 'text-[#273E1C]' : 'text-[#4F594B]',
+                                    )}
+                                  >
+                                    {category.name}
+                                  </Link>
+                                  {children.length > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setExpandedCategoryIds((current) =>
+                                          current.includes(category.id)
+                                            ? current.filter((id) => id !== category.id)
+                                            : [...current, category.id],
+                                        )
+                                      }
+                                      className="flex h-11 w-12 shrink-0 items-center justify-center text-[#6C8349]"
+                                      aria-expanded={expanded}
+                                      aria-label={category.name}
+                                    >
+                                      <ChevronDown
+                                        className={cn('h-4 w-4 transition-transform duration-200', expanded && 'rotate-180')}
+                                      />
+                                    </button>
+                                  )}
+                                </div>
+                                {expanded && (
+                                  <div className="border-t border-[#EEE8DC] bg-[#FAF8F2] px-3 py-2">
+                                    {children.map((child) => (
+                                      <Link
+                                        key={child.id}
+                                        href={`/shop/${encodeURIComponent(child.slug)}`}
+                                        onClick={() => setMobileOpen(false)}
+                                        className="flex min-h-11 items-center rounded-xl px-3 py-2 text-sm text-[#68725F] transition-colors hover:bg-white hover:text-[#273E1C]"
+                                      >
+                                        {child.name}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    )}
+
+                    <div className="surface-olive mt-6 p-5">
                       <p className="text-[10px] uppercase tracking-[0.26em] text-[#6C8349]">
                         {t('nav.brandNoteLabel')}
                       </p>
-                      <p className="mt-3 max-w-sm text-sm leading-7 text-[#43503E]">
+                      <p className="mt-3 text-sm leading-7 text-[#43503E]">
                         {t('nav.brandNote')}
                       </p>
-                      <div className="mt-5 flex flex-wrap items-center gap-3">
+                      <div className="mt-5 flex flex-wrap items-center gap-2.5">
                         <VisitStoreCTA variant="solid" showArrow />
                         <button onClick={() => setSearchOpen(true)} className="btn-gold">
                           {t('common.search')}
                         </button>
                         {!session && (
-                          <Link href="/login" className="btn-outline-gold">
+                          <Link href="/login" onClick={() => setMobileOpen(false)} className="btn-outline-gold">
                             {t('common.signIn')}
                           </Link>
                         )}
