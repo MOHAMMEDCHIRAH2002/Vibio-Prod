@@ -148,6 +148,12 @@ export default function Navbar() {
                 >
                   <Search className="h-4 w-4" />
                 </button>
+                {!isArabic && (
+                  <VisitStoreCTA
+                    variant="pill"
+                    className="hidden shrink-0 whitespace-nowrap px-3 py-2.5 lg:inline-flex"
+                  />
+                )}
               </div>
 
               <Link
@@ -163,11 +169,16 @@ export default function Navbar() {
               </Link>
 
               <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3">
-                <VisitStoreCTA
+                {/* <VisitStoreCTA
                   variant="pill"
                   className="hidden max-w-[150px] shrink-0 px-3 py-2.5 xl:max-w-[180px] lg:inline-flex"
-                />
-
+                /> */}
+                {isArabic ? (
+                  <VisitStoreCTA
+                    variant="pill"
+                    className="hidden shrink-0 whitespace-nowrap px-3 py-2.5 lg:inline-flex"
+                  />
+                ) : null}
                 <LanguageSwitcher className="hidden sm:inline-flex" />
 
                 <Link
