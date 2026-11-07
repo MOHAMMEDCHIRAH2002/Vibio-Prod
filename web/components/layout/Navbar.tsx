@@ -156,29 +156,40 @@ export default function Navbar() {
                 )}
               </div>
 
-              <Link
-                href="/"
-                className="absolute left-1/2 flex -translate-x-1/2 items-center justify-center"
-              >
-                <BrandLogo
-                  className="h-9 w-28 sm:h-12 sm:w-32 xl:h-12 xl:w-36"
-                  sizes="(min-width: 640px) 184px, 144px"
-                  priority
-                  trimPadding
-                />
-              </Link>
+              <div className="absolute left-1/2 flex -translate-x-1/2 items-center justify-center">
+                <Link
+                  href="/"
+                  className="flex shrink-0 items-center justify-center"
+                >
+                  <BrandLogo
+                    className="h-9 w-28 sm:h-12 sm:w-32 xl:h-12 xl:w-36"
+                    sizes="(min-width: 640px) 184px, 144px"
+                    priority
+                    trimPadding
+                  />
+                </Link>
+
+                {isArabic && (
+                  <div className="absolute left-full ml-5 hidden lg:block">
+                    <VisitStoreCTA
+                      variant="pill"
+                      className="!inline-flex shrink-0 whitespace-nowrap !px-2 !py-2 !text-xs"
+                    />
+                  </div>
+                )}
+              </div>
 
               <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3">
                 {/* <VisitStoreCTA
                   variant="pill"
                   className="hidden max-w-[150px] shrink-0 px-3 py-2.5 xl:max-w-[180px] lg:inline-flex"
                 /> */}
-                {isArabic ? (
+                {/* {isArabic ? (
                   <VisitStoreCTA
                     variant="pill"
                     className="hidden shrink-0 whitespace-nowrap !px-2 !py-2 !text-xs lg:inline-flex"
                   />
-                ) : null}
+                ) : null} */}
                 <LanguageSwitcher className="hidden sm:inline-flex" />
 
                 <Link
