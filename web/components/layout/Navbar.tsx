@@ -135,7 +135,7 @@ export default function Navbar() {
 
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="hidden min-w-[160px] xl:min-w-[220px] items-center justify-between rounded-full border border-[#ddd8cf] bg-white/72 px-4 py-3 text-sm text-[#6d6a63] transition-[border-color,background-color] duration-200 hover:border-[#c9b99a] hover:bg-[#f7f5f0] lg:flex"
+                  className="hidden w-[130px] xl:w-[180px] shrink-0 items-center justify-between rounded-full border border-[#ddd8cf] bg-white/72 px-4 py-3 text-sm text-[#6d6a63] transition-[border-color,background-color] duration-200 hover:border-[#c9b99a] hover:bg-[#f7f5f0] lg:flex"
                 >
                   <span>{t("nav.searchPlaceholder")}</span>
                   <Search className="h-4 w-4 text-[#273E1C]" />
@@ -151,7 +151,7 @@ export default function Navbar() {
                 {!isArabic && (
                   <VisitStoreCTA
                     variant="pill"
-                    className="hidden shrink-0 whitespace-nowrap px-3 py-2.5 lg:inline-flex"
+                    className="hidden shrink-0 whitespace-nowrap !px-2 !py-2 !text-xs lg:inline-flex"
                   />
                 )}
               </div>
@@ -161,7 +161,7 @@ export default function Navbar() {
                 className="absolute left-1/2 flex -translate-x-1/2 items-center justify-center"
               >
                 <BrandLogo
-                  className="h-9 w-28 sm:h-12 sm:w-32 xl:h-14 xl:w-40"
+                  className="h-9 w-28 sm:h-12 sm:w-32 xl:h-12 xl:w-36"
                   sizes="(min-width: 640px) 184px, 144px"
                   priority
                   trimPadding
@@ -176,7 +176,7 @@ export default function Navbar() {
                 {isArabic ? (
                   <VisitStoreCTA
                     variant="pill"
-                    className="hidden shrink-0 whitespace-nowrap px-3 py-2.5 lg:inline-flex"
+                    className="hidden shrink-0 whitespace-nowrap !px-2 !py-2 !text-xs lg:inline-flex"
                   />
                 ) : null}
                 <LanguageSwitcher className="hidden sm:inline-flex" />
